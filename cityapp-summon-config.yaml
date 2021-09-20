@@ -1,0 +1,5 @@
+DBAddress: mysql.vx
+DBName: world
+DBPort: 3306
+DBUsername: !var world_db/username
+DBPassword: !var world_db/password
