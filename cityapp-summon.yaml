@@ -12,8 +12,8 @@ metadata:
     app: cityapp-summon
 spec:
   ports:
-  - port: 3000
-    nodePort: 30001
+  - port: 80
+    nodePort: 30082
     name: http
   selector:
     app: cityapp-summon
@@ -53,7 +53,7 @@ spec:
           - name: CONJUR_AUTHN_TOKEN_FILE
             value: /run/conjur/access-token
         ports:
-        - containerPort: 3000
+        - containerPort: 80
           name: http
         volumeMounts:
           - mountPath: /run/conjur
