@@ -62,7 +62,7 @@ spec:
           - mountPath: /etc/summon
             name: summon-config
             readOnly: true
-        command: [ "summon", "-f", "/etc/summon/secrets.yaml", "ruby", "/usr/src/cityapp.rb", "-o", "0.0.0.0" ]
+        command: [ "summon", "-f", "/etc/summon/cityapp-summon-config.yaml", "ruby", "/usr/src/cityapp.rb", "-o", "0.0.0.0" ]
       initContainers:  # comment this line to troubleshoot authenticator container
       - image:  cyberark/conjur-authn-k8s-client
         imagePullPolicy: IfNotPresent
