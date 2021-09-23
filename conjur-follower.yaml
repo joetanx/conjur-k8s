@@ -40,7 +40,7 @@ spec:
           medium: Memory
       initContainers:
       - name: authenticator
-        image: localhost/cyberark/dap-seedfetcher:0.3.0
+        image: localhost/cyberark/dap-seedfetcher:0.2.0
         imagePullPolicy: IfNotPresent
         env:
           - name: CONJUR_SEED_FILE_URL
