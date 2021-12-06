@@ -38,6 +38,27 @@ rm -f cityapp-hardcode.yaml
 kubectl get all
 ```
 4. Setup Conjur Master
+4.1. RHEL Based
+```console
+chmod +x /usr/local/bin/conjur
+cd conjur
+tar xvf Conjur-Enterprise-RHELinux-Intel-Rls-v12.4.0+Conjur.RHEL.CA.tar.gz
+sed -i '$ s/accept_eula\:/accept_eula\: true/' conjur_enterprise_node_config.yml
+./conjur_enterprise_setup.sh --install-node
+cd .. && rm -rf conjur
+source /etc/profile.d/conjur_enterprise.sh
+evoke configure master --accept-eula -h conjur.vx --master-altnames conjur.vx -p CyberArk123! cyberark
+firewall-cmd --add-service http --permanent
+firewall-cmd --add-service https --permanent
+firewall-cmd --reload
+evoke ca import --root central.pem
+evoke ca import --key follower.default.svc.cluster.local.key follower.default.svc.cluster.local.pem
+evoke ca import --key conjur.vx.key --set conjur.vx.pem
+rm -f *.key
+rm -f *.pem
+conjur init -u https://conjur.vx
+```
+4.2. Container Based
 ```console
 podman load -i conjur-appliance_12.3.0.tar.gz
 podman load -i dap-seedfetcher_0.3.0.tar.gz
