@@ -39,6 +39,12 @@ kubectl get all
 ```
 4. Setup Conjur Master
 - 4.1. RHEL Based
+> Installing on RHEL 8.5
+```console
+curl http://mirror.centos.org/centos/8/BaseOS/x86_64/os/Packages/keyutils-1.5.10-9.el8.x86_64.rpm -o keyutils-1.5.10-9.el8.x86_64.rpm
+yum -y install keyutils-1.5.10-9.el8.x86_64.rpm
+rm -f keyutils-1.5.10-9.el8.x86_64.rpm
+```
 ```console
 chmod +x /usr/local/bin/conjur
 cd conjur
