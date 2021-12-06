@@ -38,6 +38,7 @@ rm -f cityapp-hardcode.yaml
 kubectl get all
 ```
 4. Setup Conjur Master
+
 4.1. RHEL Based
 ```console
 chmod +x /usr/local/bin/conjur
