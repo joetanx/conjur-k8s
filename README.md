@@ -38,8 +38,7 @@ rm -f cityapp-hardcode.yaml
 kubectl get all
 ```
 4. Setup Conjur Master
-
-4.1. RHEL Based
+- 4.1. RHEL Based
 ```console
 chmod +x /usr/local/bin/conjur
 cd conjur
@@ -59,7 +58,7 @@ rm -f *.key
 rm -f *.pem
 conjur init -u https://conjur.vx
 ```
-4.2. Container Based
+- 4.2. Container Based
 ```console
 podman load -i conjur-appliance_12.3.0.tar.gz
 podman load -i dap-seedfetcher_0.3.0.tar.gz
