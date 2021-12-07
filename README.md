@@ -3,14 +3,14 @@
 > Work in Progress
 0. Install base tools
 ```console
-yum -y install wget tar podman
+yum -y install podman
 ```
 1. Setup MySQL database
 ```console
 yum -y install mysql-server
 systemctl enable --now mysqld
 firewall-cmd --permanent --add-service mysql && firewall-cmd --reload
-curl https://downloads.mysql.com/docs/world-db.tar.gz -o world-db.tar.gz
+curl -L -o world-db.tar.gz https://downloads.mysql.com/docs/world-db.tar.gz
 tar xvf world-db.tar.gz
 mysql -u root
 CREATE USER 'cityapp'@'%' IDENTIFIED BY 'Cyberark1';
@@ -25,14 +25,14 @@ rm -rf world-db
 2. Create cityapp image
 ```console
 mkdir cityapp && cd $_
-wget https://github.com/joetan1/conjur-k8s/raw/main/cityapp.tgz
+curl -L -o cityapp.tgz https://github.com/joetan1/conjur-k8s/raw/main/cityapp.tgz
 tar xvf cityapp.tgz
 ./build.sh
 cd .. && rm -rf cityapp
 ```
 3. Deploy cityapp-hardcode
 ```console
-wget https://github.com/joetan1/conjur-k8s/raw/main/cityapp-hardcode.yaml
+curl -L -o cityapp-hardcode.yaml https://github.com/joetan1/conjur-k8s/raw/main/cityapp-hardcode.yaml
 kubectl apply -f cityapp-hardcode.yaml
 rm -f cityapp-hardcode.yaml
 kubectl get all
@@ -58,6 +58,8 @@ firewall-cmd --add-service ldaps --permanent
 firewall-cmd --add-port 1999/tcp --permanent
 firewall-cmd --add-service postgresql --permanent
 firewall-cmd --reload
+curl -L -o conjur-certs.tgz https://github.com/joetan1/conjur-k8s/raw/main/conjur-certs.tgz
+tar xvf conjur-certs.tgz
 evoke ca import --root central.pem
 evoke ca import --key follower.default.svc.cluster.local.key follower.default.svc.cluster.local.pem
 evoke ca import --key conjur.vx.key --set conjur.vx.pem
@@ -77,7 +79,7 @@ podman exec conjur evoke configure master --accept-eula -h conjur.vx --master-al
 podman generate systemd -fn conjur
 mv container-conjur.service /usr/lib/systemd/system
 systemctl enable container-conjur
-wget https://github.com/joetan1/conjur-k8s/raw/main/conjur-certs.tgz
+curl -L -o conjur-certs.tgz https://github.com/joetan1/conjur-k8s/raw/main/conjur-certs.tgz
 podman cp conjur-certs.tgz conjur:/tmp/
 podman exec conjur tar xvf /tmp/conjur-certs.tgz -C /tmp/
 podman exec conjur evoke ca import --root /tmp/central.pem
@@ -91,13 +93,13 @@ conjur init -u https://conjur.vx
 5. Deploy Conjur follower
 ```console
 kubectl create serviceaccount conjur-cluster
-wget https://github.com/joetan1/conjur-k8s/raw/main/conjur-authn-k8s.yaml
+curl -L -o conjur-authn-k8s.yaml https://github.com/joetan1/conjur-k8s/raw/main/conjur-authn-k8s.yaml
 conjur policy load -f conjur-authn-k8s.yaml -b root
 podman exec conjur chpst -u conjur conjur-plugin-service possum rake authn_k8s:ca_init["conjur/authn-k8s/demo"]
 podman exec conjur sed -i -e '$aCONJUR_AUTHENTICATORS="authn,authn-k8s/demo"' /opt/conjur/etc/conjur.conf
 podman exec conjur sv restart conjur
 curl -k https://conjur.vx/info
-wget https://github.com/joetan1/conjur-k8s/raw/main/conjur-k8s-rbac.yaml
+curl -L -o conjur-k8s-rbac.yaml https://github.com/joetan1/conjur-k8s/raw/main/conjur-k8s-rbac.yaml
 kubectl apply -f conjur-k8s-rbac.yaml
 yum -y install jq
 TOKEN_SECRET_NAME="$(kubectl get secrets | grep 'conjur.*service-account-token' | head -n1 | awk '{print $1}')"
@@ -113,12 +115,12 @@ conjur variable set -i conjur/authn-k8s/demo/kubernetes/service-account-token -v
 conjur variable set -i conjur/authn-k8s/demo/kubernetes/api-url -v "$API_URL"
 openssl s_client -showcerts -connect conjur.vx:443 </dev/null 2>/dev/null | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > master-certificate.pem
 kubectl create configmap master-certificate --from-file=ssl-certificate=<(cat master-certificate.pem)
-wget https://github.com/joetan1/conjur-k8s/raw/main/conjur-follower.yaml
+curl -L -o conjur-follower.yaml https://github.com/joetan1/conjur-k8s/raw/main/conjur-follower.yaml
 kubectl apply -f conjur-follower.yaml
 ```
 6. Setup authenticators, AppIdentities, variables, and permissions in Conjur
 ```console
-wget https://github.com/joetan1/conjur-k8s/raw/main/conjur-app-var.yaml
+curl -L -o conjur-app-var.yaml https://github.com/joetan1/conjur-k8s/raw/main/conjur-app-var.yaml
 conjur policy load -f conjur-app-var.yaml -b root
 conjur variable set -i world_db/username -v cityapp
 conjur variable set -i world_db/password -v Cyberark1
@@ -131,15 +133,15 @@ kubectl create configmap follower-certificate --from-file=ssl-certificate=<(cat 
 ```
 8. Deploy cityapp-summon
 ```console
-wget https://github.com/joetan1/conjur-k8s/raw/main/cityapp-summon-config.yaml
+curl -L -o https://github.com/joetan1/conjur-k8s/raw/main/cityapp-summon-config.yaml
 kubectl create configmap cityapp-summon-config --from-file=cityapp-summon-config.yaml
-wget https://github.com/joetan1/conjur-k8s/raw/main/cityapp-summon.yaml
+curl -L -o https://github.com/joetan1/conjur-k8s/raw/main/cityapp-summon.yaml
 kubectl apply -f cityapp-summon.yaml
 ```
 9. Deploy cityapp-secretless
 ```console
-wget https://github.com/joetan1/conjur-k8s/raw/main/cityapp-secretless-config.yaml
+curl -L -o https://github.com/joetan1/conjur-k8s/raw/main/cityapp-secretless-config.yaml
 kubectl create configmap cityapp-secretless-config --from-file=cityapp-secretless-config.yaml
-wget https://github.com/joetan1/conjur-k8s/raw/main/cityapp-secretless.yaml
+curl -L -o https://github.com/joetan1/conjur-k8s/raw/main/cityapp-secretless.yaml
 kubectl apply -f cityapp-secretless.yaml
 ```
