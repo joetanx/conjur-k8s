@@ -54,6 +54,9 @@ source /etc/profile.d/conjur_enterprise.sh
 evoke configure master --accept-eula -h conjur.vx --master-altnames conjur.vx -p CyberArk123! cyberark
 firewall-cmd --add-service http --permanent
 firewall-cmd --add-service https --permanent
+firewall-cmd --add-service ldaps --permanent
+firewall-cmd --add-port 1999/tcp --permanent
+firewall-cmd --add-service postgresql --permanent
 firewall-cmd --reload
 evoke ca import --root central.pem
 evoke ca import --key follower.default.svc.cluster.local.key follower.default.svc.cluster.local.pem
