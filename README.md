@@ -32,7 +32,7 @@ cd .. && rm -rf cityapp
 ```
 3. Deploy cityapp-hardcode
 ```console
-wget https://github.com/joetan1/conjur-k8s/raw/main/cityapp-harcode.yaml
+wget https://github.com/joetan1/conjur-k8s/raw/main/cityapp-hardcode.yaml
 kubectl apply -f cityapp-hardcode.yaml
 rm -f cityapp-hardcode.yaml
 kubectl get all
