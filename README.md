@@ -133,15 +133,15 @@ kubectl create configmap follower-certificate --from-file=ssl-certificate=<(cat 
 ```
 8. Deploy cityapp-summon
 ```console
-curl -L -o https://github.com/joetan1/conjur-k8s/raw/main/cityapp-summon-config.yaml
+curl -L -o cityapp-summon-config.yaml https://github.com/joetan1/conjur-k8s/raw/main/cityapp-summon-config.yaml
 kubectl create configmap cityapp-summon-config --from-file=cityapp-summon-config.yaml
-curl -L -o https://github.com/joetan1/conjur-k8s/raw/main/cityapp-summon.yaml
+curl -L -o cityapp-summon.yaml https://github.com/joetan1/conjur-k8s/raw/main/cityapp-summon.yaml
 kubectl apply -f cityapp-summon.yaml
 ```
 9. Deploy cityapp-secretless
 ```console
-curl -L -o https://github.com/joetan1/conjur-k8s/raw/main/cityapp-secretless-config.yaml
+curl -L -o cityapp-secretless-config.yaml https://github.com/joetan1/conjur-k8s/raw/main/cityapp-secretless-config.yaml
 kubectl create configmap cityapp-secretless-config --from-file=cityapp-secretless-config.yaml
-curl -L -o https://github.com/joetan1/conjur-k8s/raw/main/cityapp-secretless.yaml
+curl -L -o cityapp-secretless.yaml https://github.com/joetan1/conjur-k8s/raw/main/cityapp-secretless.yaml
 kubectl apply -f cityapp-secretless.yaml
 ```
