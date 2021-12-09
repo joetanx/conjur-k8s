@@ -40,7 +40,7 @@ spec:
           medium: Memory
       initContainers:
       - name: authenticator
-        image: localhost/cyberark/dap-seedfetcher:0.2.0
+        image: cyberark/dap-seedfetcher
         imagePullPolicy: IfNotPresent
         env:
           - name: CONJUR_SEED_FILE_URL
@@ -80,7 +80,7 @@ spec:
       containers:
       - name: conjur
         command: ["/tmp/seedfile/start-follower.sh"]
-        image: registry.tld/conjur-appliance:12.3.0
+        image: registry.tld/conjur-appliance:12.4.0
         imagePullPolicy: IfNotPresent
         env:
           - name: CONJUR_AUTHENTICATORS
