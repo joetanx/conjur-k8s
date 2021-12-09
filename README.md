@@ -39,7 +39,7 @@ kubectl get all
 ```
 4. Setup Conjur Master
 - 4.1. RHEL Based Master
-> Installing on RHEL 8.5
+> The Conjur installer comes with an older version of keyutils which will fail to install if your RHEL is updated or if you're installing on RHEL 8.5. Manually installing keyutils resolves this.
 ```console
 yum -y install http://mirror.centos.org/centos/8/BaseOS/x86_64/os/Packages/keyutils-1.5.10-9.el8.x86_64.rpm
 ```
