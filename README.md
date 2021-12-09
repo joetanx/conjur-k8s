@@ -69,12 +69,10 @@ conjur init -u https://conjur.vx
 ```
 - 4.2. Container Based
 ```console
-podman load -i conjur-appliance_12.3.0.tar.gz
-podman load -i dap-seedfetcher_0.3.0.tar.gz
+podman load -i conjur-appliance_12.4.0.tar.gz
+rm -f conjur-appliance_12.4.0.tar.gz
 chmod +x /usr/local/bin/conjur
-rm -f conjur-appliance_12.3.0.tar.gz
-rm -f dap-seedfetcher_0.3.0.tar.gz
-podman run --name conjur -d --security-opt seccomp=unconfined -p "443:443" -p "636:636" -p "5432:5432" -p "1999:1999" conjur-appliance:12.3.0
+podman run --name conjur -d --security-opt seccomp=unconfined -p "443:443" -p "636:636" -p "5432:5432" -p "1999:1999" conjur-appliance:12.4.0
 podman exec conjur evoke configure master --accept-eula -h conjur.vx --master-altnames "conjur.vx" -p CyberArk123! cyberark
 podman generate systemd -fn conjur
 mv container-conjur.service /usr/lib/systemd/system
