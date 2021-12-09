@@ -38,7 +38,7 @@ rm -f cityapp-hardcode.yaml
 kubectl get all
 ```
 4. Setup Conjur Master
-- 4.1. RHEL Based
+- 4.1. RHEL Based Master
 > Installing on RHEL 8.5
 ```console
 yum -y install http://mirror.centos.org/centos/8/BaseOS/x86_64/os/Packages/keyutils-1.5.10-9.el8.x86_64.rpm
@@ -67,7 +67,7 @@ rm -f *.key
 rm -f *.pem
 conjur init -u https://conjur.vx
 ```
-- 4.2. Container Based
+- 4.2. Container Based Master
 ```console
 podman load -i conjur-appliance_12.4.0.tar.gz
 rm -f conjur-appliance_12.4.0.tar.gz
@@ -88,7 +88,46 @@ podman exec conjur /bin/sh -c "rm -f /tmp/conjur-certs.tgz /tmp/*.pem /tmp/*key"
 rm -f conjur-certs.tgz
 conjur init -u https://conjur.vx
 ```
-5. Deploy Conjur follower
+5. Deploy Conjur Follower
+- 5.1. RHEL Based Master
+```console
+podman load -i conjur-appliance_12.4.0.tar.gz
+rm -f conjur-appliance_12.4.0.tar.gz
+kubectl create serviceaccount conjur-cluster
+curl -L -o conjur-authn-k8s.yaml https://github.com/joetan1/conjur-k8s/raw/main/conjur-authn-k8s.yaml
+conjur policy load -f conjur-authn-k8s.yaml -b root
+su conjur -c 'conjur-plugin-service possum rake authn_k8s:ca_init["conjur/authn-k8s/demo"]'
+sed -i -e '$aCONJUR_AUTHENTICATORS="authn,authn-k8s/demo"' /opt/conjur/etc/conjur.conf
+systemctl restart conjur
+curl -k https://conjur.vx/info
+curl -L -o conjur-k8s-rbac.yaml https://github.com/joetan1/conjur-k8s/raw/main/conjur-k8s-rbac.yaml
+kubectl apply -f conjur-k8s-rbac.yaml
+yum -y install jq
+TOKEN_SECRET_NAME="$(kubectl get secrets | grep 'conjur.*service-account-token' | head -n1 | awk '{print $1}')"
+CA_CERT="$(kubectl get secret $TOKEN_SECRET_NAME -o json | jq -r '.data["ca.crt"]' | base64 --decode)"
+SERVICE_ACCOUNT_TOKEN="$(kubectl get secret $TOKEN_SECRET_NAME -o json | jq -r .data.token | base64 --decode)"
+API_URL="$(kubectl config view --minify -o json | jq -r '.clusters[0].cluster.server')"
+echo $TOKEN_SECRET_NAME
+echo $CA_CERT
+echo $SERVICE_ACCOUNT_TOKEN
+echo $API_URL
+conjur variable set -i conjur/authn-k8s/demo/kubernetes/ca-cert -v "$CA_CERT"
+conjur variable set -i conjur/authn-k8s/demo/kubernetes/service-account-token -v "$SERVICE_ACCOUNT_TOKEN"
+conjur variable set -i conjur/authn-k8s/demo/kubernetes/api-url -v "$API_URL"
+openssl s_client -showcerts -connect conjur.vx:443 </dev/null 2>/dev/null | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > master-certificate.pem
+kubectl create configmap master-certificate --from-file=ssl-certificate=<(cat master-certificate.pem)
+curl -L -o conjur-follower.yaml https://github.com/joetan1/conjur-k8s/raw/main/conjur-follower.yaml
+```
+> For Conjur Master on RHEL, the Conjur CLI .netrc file will cause the follower deployment to fail. Logout and delete the .netrc before deploying the follower.
+```console
+conjur logout
+rm -f .netrc
+```
+> Deploy the follower after clean-up
+```console
+kubectl apply -f conjur-follower.yaml
+```
+- 5.2. Container Based Master
 ```console
 kubectl create serviceaccount conjur-cluster
 curl -L -o conjur-authn-k8s.yaml https://github.com/joetan1/conjur-k8s/raw/main/conjur-authn-k8s.yaml
@@ -115,6 +154,52 @@ openssl s_client -showcerts -connect conjur.vx:443 </dev/null 2>/dev/null | sed 
 kubectl create configmap master-certificate --from-file=ssl-certificate=<(cat master-certificate.pem)
 curl -L -o conjur-follower.yaml https://github.com/joetan1/conjur-k8s/raw/main/conjur-follower.yaml
 kubectl apply -f conjur-follower.yaml
+```
+- 5.3. Load hosts in CoreDNS
+> The `dap-seedfetcher` container uses wget to retrieve the seed file from Conjur Master.
+
+> Depending on network configurations, some dual stacked kubernetes may not be able to resolve static host entries in DNS properly, causing `wget: unable to resolve host address` error.
+
+> This is seen in my lab using Sophos Firewall with my Conjur Master FQDN configured as an IPv4 A record. The wget attempts to resolve for both A and AAAA; Sophos Firewall replies to AAAA with an NXDOMAIN response, causing wget to fail.
+
+> This dual-stack behaviour is some what explained in: https://umbrella.cisco.com/blog/dual-stack-search-domains-host-roulette
+
+> We can ensure resolution of our Conjur Master FQDN by loading it into the Kubernetes CoreDNS. https://coredns.io/plugins/hosts/
+```console
+kubectl edit cm coredns -n kube-system
+```
+> Add the hosts portion into the Corefile section
+```console
+  Corefile: |
+    .:53 {
+        errors
+        health {
+           lameduck 5s
+        }
+        ready
+        kubernetes cluster.local in-addr.arpa ip6.arpa {
+           pods insecure
+           fallthrough in-addr.arpa ip6.arpa
+           ttl 30
+        }
+        prometheus :9153
+        forward . /etc/resolv.conf {
+           max_concurrent 1000
+        }
+        cache 30
+        loop
+        reload
+        loadbalance
+        hosts {
+           192.168.17.90 conjur.vx
+           192.168.17.90 mysql.vx
+           fallthrough
+        }
+    }
+```
+> Restart the CoreDNS deployment
+```console
+kubectl rollout restart deploy coredns -n kube-system
 ```
 6. Setup authenticators, AppIdentities, variables, and permissions in Conjur
 ```console
