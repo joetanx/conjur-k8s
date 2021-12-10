@@ -26,9 +26,12 @@ SHOW DATABASES;
 SELECT user,host FROM mysql.user;
 QUIT;
 ```
-- Clean-up
+- Verify
 ```console
 ls -l /var/lib/mysql/world
+```
+- Clean-up
+```console
 rm -f world-db.tar.gz
 rm -rf world-db
 ```
@@ -82,7 +85,8 @@ chmod +x /usr/local/bin/conjur
 - Obtain the Conjur installation package from CyberArk
 - Unpack and install Conjur node
 ```console
-cd conjur
+mkdir conjur && cd $_
+# upload Conjur-Enterprise-RHELinux-Intel-Rls-v12.4.0+Conjur.RHEL.CA.tar.gz to conjur folder
 tar xvf Conjur-Enterprise-RHELinux-Intel-Rls-v12.4.0+Conjur.RHEL.CA.tar.gz
 sed -i '$ s/accept_eula\:/accept_eula\: true/' conjur_enterprise_node_config.yml
 ./conjur_enterprise_setup.sh --install-node
@@ -281,6 +285,12 @@ kubectl apply -f conjur-follower.yaml
 - Verify that follower replication is healthy
 ```console
 curl -k https://conjur.vx/health
+```
+- Clean-up
+```console
+rm -f master-certificate.pem
+rm -f conjur-authn-k8s.yaml
+rm -f conjur-k8s-rbac.yaml
 ```
 ## 5.1. Load hosts in CoreDNS
 - The `dap-seedfetcher` container uses `wget` to retrieve the seed file from Conjur Master.
