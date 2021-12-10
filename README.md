@@ -357,7 +357,7 @@ conjur variable set -i world_db/password -v Cyberark1
 ```
 - Clean-up
 ```console
-rm -f *.yaml
+conjur-app-var.yaml
 ```
 # 7. Create ConfigMap for follower certificate
 - The `conjur-authn-k8s-client` and `secretless-broker` containers validate the follower service using the follower certificate
