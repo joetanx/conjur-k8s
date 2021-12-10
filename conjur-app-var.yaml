@@ -1,5 +1,5 @@
 ### Authenticators ###
-### - Create the conjur/authn-k8s/aks/apps policy
+### - Create the conjur/authn-k8s/demo/apps policy
 ### - Create authenticators for Summon and Secretless service accounts under this policy
 - !policy
   id: conjur/authn-k8s/demo/apps
