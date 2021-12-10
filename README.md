@@ -355,6 +355,10 @@ conjur policy load -f conjur-app-var.yaml -b root
 conjur variable set -i world_db/username -v cityapp
 conjur variable set -i world_db/password -v Cyberark1
 ```
+- Clean-up
+```console
+rm -f *.yaml
+```
 # 7. Create ConfigMap for follower certificate
 - The `conjur-authn-k8s-client` and `secretless-broker` containers validate the follower service using the follower certificate
 - Create a Kubernetes ConfigMap for follower certificate, the Summon and Secretless cityapp deployment will use this ConfigMap
