@@ -357,7 +357,7 @@ conjur variable set -i world_db/password -v Cyberark1
 ```
 - Clean-up
 ```console
-conjur-app-var.yaml
+rm -f conjur-app-var.yaml
 ```
 # 7. Create ConfigMap for follower certificate
 - The `conjur-authn-k8s-client` and `secretless-broker` containers validate the follower service using the follower certificate
@@ -366,6 +366,10 @@ conjur-app-var.yaml
 FOLLOWER_POD_NAME="$(kubectl get pods | grep follower | head -n1 | awk '{print $1}')"
 kubectl exec -it $FOLLOWER_POD_NAME -c conjur -- cat /opt/conjur/etc/ssl/conjur.pem > follower-certificate.pem
 kubectl create configmap follower-certificate --from-file=ssl-certificate=<(cat follower-certificate.pem)
+```
+- Clean-up
+```console
+rm -f follower-certificate.pem
 ```
 # 8. Deploy cityapp-summon
 -  Load the summon configuration yaml file as Kubernetes ConfigMap
