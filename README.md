@@ -374,6 +374,10 @@ kubectl create configmap cityapp-summon-config --from-file=cityapp-summon-config
 curl -L -o cityapp-summon.yaml https://github.com/joetan1/conjur-k8s/raw/main/cityapp-summon.yaml
 kubectl apply -f cityapp-summon.yaml
 ```
+- Clean-up
+```console
+rm -f *.yaml
+```
 # 9. Deploy cityapp-secretless
 -  Load the secretless configuration yaml file as Kubernetes ConfigMap
 ```console
@@ -384,4 +388,8 @@ kubectl create configmap cityapp-secretless-config --from-file=cityapp-secretles
 ```console
 curl -L -o cityapp-secretless.yaml https://github.com/joetan1/conjur-k8s/raw/main/cityapp-secretless.yaml
 kubectl apply -f cityapp-secretless.yaml
+```
+- Clean-up
+```console
+rm -f *.yaml
 ```
