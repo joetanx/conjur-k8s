@@ -43,7 +43,7 @@ yum -y install podman
 - Build cityapp container image
 ```console
 mkdir cityapp && cd $_
-curl -L -o cityapp.tgz https://github.com/joetan1/conjur-k8s/raw/main/cityapp.tgz
+curl -L -o cityapp.tgz https://github.com/joetanx/conjur-k8s/raw/main/cityapp.tgz
 tar xvf cityapp.tgz
 ./build.sh
 ```
@@ -57,7 +57,7 @@ cd .. && rm -rf cityapp
 - The cityapp pod is configured to be deployed into `default` namespace
 - Edit `cityapp-hardcode.yaml` according to your environment
 ```console
-curl -L -o cityapp-hardcode.yaml https://github.com/joetan1/conjur-k8s/raw/main/cityapp-hardcode.yaml
+curl -L -o cityapp-hardcode.yaml https://github.com/joetanx/conjur-k8s/raw/main/cityapp-hardcode.yaml
 kubectl apply -f cityapp-hardcode.yaml
 ```
 - Clean-up
@@ -77,10 +77,17 @@ Conjur Master deployment options:
 ```console
 yum -y install http://mirror.centos.org/centos/8/BaseOS/x86_64/os/Packages/keyutils-1.5.10-9.el8.x86_64.rpm
 ```
-- Upload the Conjur CLI and add execute permissions
+- Download the Conjur CLI and add execute permissions
 - Ref: https://github.com/cyberark/conjur-api-python3/releases
 ```console
+curl -L -o conjur-cli-rhel-8.tar.gz https://github.com/cyberark/conjur-api-python3/releases/download/v7.1.0/conjur-cli-rhel-8.tar.gz
+tar xvf conjur-cli-rhel-8.tar.gz
+mv conjur /usr/local/bin/
 chmod +x /usr/local/bin/conjur
+```
+- Clean-up
+```console
+rm -f conjur-cli-rhel-8.tar.gz
 ```
 - Obtain the Conjur installation package from CyberArk
 - Unpack and install Conjur node
@@ -115,7 +122,7 @@ evoke configure master --accept-eula -h conjur.vx --master-altnames conjur.vx -p
 - Refer to https://github.com/joetanx/conjur-k8s/blob/main/generate-conjur-certificates.md for a guide to generate your own certificates
 > Note: In event of "error: cert already in hash table", ensure that conjur/follower certificates do not contain the CA certificate
 ```console
-curl -L -o conjur-certs.tgz https://github.com/joetan1/conjur-k8s/raw/main/conjur-certs.tgz
+curl -L -o conjur-certs.tgz https://github.com/joetanx/conjur-k8s/raw/main/conjur-certs.tgz
 tar xvf conjur-certs.tgz
 evoke ca import --root central.pem
 evoke ca import --key follower.default.svc.cluster.local.key follower.default.svc.cluster.local.pem
@@ -132,23 +139,49 @@ conjur init -u https://conjur.vx
 conjur login -i admin -p CyberArk123!
 ```
 ## 4.2. Container Based Master
+- Install podman
+```console
+yum -y installl podman
+```
 - Obtain the Conjur container image from CyberArk
 - Upload the Conjur container image to the container host
 ```console
-podman load -i conjur-appliance_12.4.0.tar.gz
+podman load -i conjur-appliance_12.4.1.tar.gz
 ```
 - Clean-up
 ```console
-rm -f conjur-appliance_12.4.0.tar.gz
+rm -f conjur-appliance_12.4.1.tar.gz
 ```
-- Upload the Conjur CLI and add execute permissions
+- Stage the volume mounts and download the conjur configuration file
+```console
+mkdir -p /opt/cyberark/dap/{security,config,backups,seeds,logs}
+curl -L -o /opt/cyberark/dap/config/conjur.yml https://github.com/joetanx/conjur-k8s/raw/main/conjur.yml
+```
+- Download the Conjur CLI and add execute permissions
 - Ref: https://github.com/cyberark/conjur-api-python3/releases
 ```console
+curl -L -o conjur-cli-rhel-8.tar.gz https://github.com/cyberark/conjur-api-python3/releases/download/v7.1.0/conjur-cli-rhel-8.tar.gz
+tar xvf conjur-cli-rhel-8.tar.gz
+mv conjur /usr/local/bin/
 chmod +x /usr/local/bin/conjur
+```
+- Clean-up
+```console
+rm -f conjur-cli-rhel-8.tar.gz
 ```
 - Run the Conjur container
 ```console
-podman run --name conjur -d --security-opt seccomp=unconfined -p "443:443" -p "636:636" -p "5432:5432" -p "1999:1999" conjur-appliance:12.4.0
+podman run --name conjur -d \
+--restart=unless-stopped \
+--security-opt seccomp=unconfined \
+-p "443:443" -p "444:444" -p "5432:5432" -p "1999:1999" \
+--log-driver journald \
+-v /opt/cyberark/dap/config:/etc/conjur/config:Z \
+-v /opt/cyberark/dap/security:/opt/cyberark/dap/security:Z \
+-v /opt/cyberark/dap/backups:/opt/conjur/backup:Z \
+-v /opt/cyberark/dap/seeds:/opt/cyberark/dap/seeds:Z \
+-v /opt/cyberark/dap/logs:/var/log/conjur:Z \
+registry.tld/conjur-appliance:12.4.1
 ```
 - Setup the Conjur container as master
 - Edit the admin account password in `-p` option and the Conjur account (`cyberark`) according to your environment
@@ -158,16 +191,15 @@ podman exec conjur evoke configure master --accept-eula -h conjur.vx --master-al
 - Run the Conjur container as systemd service and configure it to setup with container host
 - Ref: https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux_atomic_host/7/html/managing_containers/running_containers_as_systemd_services_with_podman
 ```console
-podman generate systemd -fn conjur
-mv container-conjur.service /usr/lib/systemd/system
-systemctl enable container-conjur
+podman generate systemd conjur --name --container-prefix="" --separator="" > /etc/systemd/system/conjur.service
+systemctl enable conjur
 ```
 - Setup Conjur certificates
 - The `conjur-certs.tgz` include CA, Master and follower certificates for my lab use, you should generate your own certificates
 - Refer to https://github.com/joetanx/conjur-k8s/blob/main/generate-conjur-certificates.md for a guide to generate your own certificates
 > Note: In event of "error: cert already in hash table", ensure that conjur/follower certificates do not contain the CA certificate
 ```console
-curl -L -o conjur-certs.tgz https://github.com/joetan1/conjur-k8s/raw/main/conjur-certs.tgz
+curl -L -o conjur-certs.tgz https://github.com/joetanx/conjur-k8s/raw/main/conjur-certs.tgz
 podman cp conjur-certs.tgz conjur:/tmp/
 podman exec conjur tar xvf /tmp/conjur-certs.tgz -C /tmp/
 podman exec conjur evoke ca import --root /tmp/central.pem
@@ -190,11 +222,11 @@ The Conjur follower will be deployed in the Kubernetes cluster
 - Obtain the Conjur container image from CyberArk
 - Upload the Conjur container image to the Kubernetes node
 ```console
-podman load -i conjur-appliance_12.4.0.tar.gz
+podman load -i conjur-appliance_12.4.1.tar.gz
 ```
 - Clean-up
 ```console
-rm -f conjur-appliance_12.4.0.tar.gz
+rm -f conjur-appliance_12.4.1.tar.gz
 ```
 - Create service account for conjur follower deployment
 ```console
@@ -205,7 +237,7 @@ kubectl create serviceaccount conjur-cluster
   - Enable the seed generation service
 - Ref: https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-k8s-authn.htm
 ```console
-curl -L -o conjur-authn-k8s.yaml https://github.com/joetan1/conjur-k8s/raw/main/conjur-authn-k8s.yaml
+curl -L -o conjur-authn-k8s.yaml https://github.com/joetanx/conjur-k8s/raw/main/conjur-authn-k8s.yaml
 conjur policy load -f conjur-authn-k8s.yaml -b root
 ```
 - Initialize the Conjur internal CA that will be used for the Kubernetes authenticator
@@ -235,7 +267,7 @@ curl -k https://conjur.vx/info
 ```
 - Create cluster role and role binding for conjur-cluster service account
 ```console
-curl -L -o conjur-k8s-rbac.yaml https://github.com/joetan1/conjur-k8s/raw/main/conjur-k8s-rbac.yaml
+curl -L -o conjur-k8s-rbac.yaml https://github.com/joetanx/conjur-k8s/raw/main/conjur-k8s-rbac.yaml
 kubectl apply -f conjur-k8s-rbac.yaml
 ```
 - Configure Kubernetes cluster API details in Conjur
@@ -279,7 +311,7 @@ rm -f .netrc
 ```
 - Deploy the Follower with seedfetcher
 ```console
-curl -L -o conjur-follower.yaml https://github.com/joetan1/conjur-k8s/raw/main/conjur-follower.yaml
+curl -L -o conjur-follower.yaml https://github.com/joetanx/conjur-k8s/raw/main/conjur-follower.yaml
 kubectl apply -f conjur-follower.yaml
 ```
 - Verify that follower replication is healthy
@@ -347,7 +379,7 @@ The policies in `conjur-app-var.yaml` configures the following:
   - The `k8s-apps/default` layer created in `AppIdentities` section is added to the `world_db/consumers` group
 - Download the policy file and load to Conjur
 ```console
-curl -L -o conjur-app-var.yaml https://github.com/joetan1/conjur-k8s/raw/main/conjur-app-var.yaml
+curl -L -o conjur-app-var.yaml https://github.com/joetanx/conjur-k8s/raw/main/conjur-app-var.yaml
 conjur policy load -f conjur-app-var.yaml -b root
 ```
 - Populate the variables with the username and password of the MySQL database
@@ -374,12 +406,12 @@ rm -f follower-certificate.pem
 # 8. Deploy cityapp-summon
 -  Load the summon configuration yaml file as Kubernetes ConfigMap
 ```console
-curl -L -o cityapp-summon-config.yaml https://github.com/joetan1/conjur-k8s/raw/main/cityapp-summon-config.yaml
+curl -L -o cityapp-summon-config.yaml https://github.com/joetanx/conjur-k8s/raw/main/cityapp-summon-config.yaml
 kubectl create configmap cityapp-summon-config --from-file=cityapp-summon-config.yaml
 ```
 - Deploy the Summon-based cityapp
 ```console
-curl -L -o cityapp-summon.yaml https://github.com/joetan1/conjur-k8s/raw/main/cityapp-summon.yaml
+curl -L -o cityapp-summon.yaml https://github.com/joetanx/conjur-k8s/raw/main/cityapp-summon.yaml
 kubectl apply -f cityapp-summon.yaml
 ```
 - Clean-up
@@ -389,12 +421,12 @@ rm -f *.yaml
 # 9. Deploy cityapp-secretless
 -  Load the secretless configuration yaml file as Kubernetes ConfigMap
 ```console
-curl -L -o cityapp-secretless-config.yaml https://github.com/joetan1/conjur-k8s/raw/main/cityapp-secretless-config.yaml
+curl -L -o cityapp-secretless-config.yaml https://github.com/joetanx/conjur-k8s/raw/main/cityapp-secretless-config.yaml
 kubectl create configmap cityapp-secretless-config --from-file=cityapp-secretless-config.yaml
 ```
 - Deploy the Secretless-based cityapp
 ```console
-curl -L -o cityapp-secretless.yaml https://github.com/joetan1/conjur-k8s/raw/main/cityapp-secretless.yaml
+curl -L -o cityapp-secretless.yaml https://github.com/joetanx/conjur-k8s/raw/main/cityapp-secretless.yaml
 kubectl apply -f cityapp-secretless.yaml
 ```
 - Clean-up
