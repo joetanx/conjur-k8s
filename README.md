@@ -83,7 +83,6 @@ yum -y install http://mirror.centos.org/centos/8/BaseOS/x86_64/os/Packages/keyut
 curl -L -o conjur-cli-rhel-8.tar.gz https://github.com/cyberark/conjur-api-python3/releases/download/v7.1.0/conjur-cli-rhel-8.tar.gz
 tar xvf conjur-cli-rhel-8.tar.gz
 mv conjur /usr/local/bin/
-chmod +x /usr/local/bin/conjur
 ```
 - Clean-up
 ```console
@@ -163,7 +162,6 @@ curl -L -o /opt/cyberark/dap/config/conjur.yml https://github.com/joetanx/conjur
 curl -L -o conjur-cli-rhel-8.tar.gz https://github.com/cyberark/conjur-api-python3/releases/download/v7.1.0/conjur-cli-rhel-8.tar.gz
 tar xvf conjur-cli-rhel-8.tar.gz
 mv conjur /usr/local/bin/
-chmod +x /usr/local/bin/conjur
 ```
 - Clean-up
 ```console
