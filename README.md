@@ -123,14 +123,6 @@ conjur variable set -i conjur/authn-k8s/demo/kubernetes/api-url -v "$API_URL"
 openssl s_client -showcerts -connect conjur.vx:443 </dev/null 2>/dev/null | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > master-certificate.pem
 kubectl create configmap master-certificate --from-file=ssl-certificate=<(cat master-certificate.pem)
 ```
-- Extra step for Conjur Master on RHEL before follower deployment
-> For Conjur Master on RHEL, the Conjur CLI .netrc file will cause the follower deployment to fail.
-> 
-> Logout and delete the .netrc before deploying the follower.
-```console
-conjur logout
-rm -f .netrc
-```
 - Deploy the Follower with seedfetcher
 ```console
 curl -L -o conjur-follower.yaml https://github.com/joetanx/conjur-k8s/raw/main/conjur-follower.yaml
