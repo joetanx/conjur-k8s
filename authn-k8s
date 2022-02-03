@@ -1,0 +1,79 @@
+# Enroll a Kubernetes authentication service
+# Ref: https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-k8s-authn.htm
+- !policy
+  id: conjur/authn-k8s/demo
+  annotations:
+    description: K8s Authenticator policy definitions
+  body:
+  # vars for ocp/k8s api url & access creds
+  - !variable kubernetes/service-account-token
+  - !variable kubernetes/ca-cert
+  - !variable kubernetes/api-url
+  # vars for CA for this service ID
+  - !variable ca/cert
+  - !variable ca/key
+  # This webservice represents the K8s authenticator
+  - !webservice
+    annotations:
+      description: Authenticator service for K8s cluster
+  # Create 'consumers' group
+  - !group consumers
+  # Grant consumers group role authentication privileges
+  - !permit
+    role: !group consumers
+    privilege: [ read, authenticate ]
+    resource: !webservice
+# Register the seed generation service
+# Ref: https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-k8s-authn.htm
+- !policy
+  id: conjur/seed-generation
+  body:
+  # This webservice represents the Seed service API
+  - !webservice
+  # Hosts that can generate seeds become members of the
+  # `consumers` group.
+  - !group consumers
+  # Authorize `consumers` to request seeds
+  - !permit
+    role: !group consumers
+    privilege: [ "execute" ]
+    resource: !webservice
+# Create identity for followers in K8s cluster
+# https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-follower.htm
+- !policy
+  id: conjur/followers
+  body:
+  - !host
+    id: k8s-follower
+    annotations:
+      authn-k8s/namespace: conjur
+      authn-k8s/service-account: authn-k8s-sa
+# Add follower to consumers group for K8s Authenticator and Seed Generation
+- !grant
+  roles:
+  - !group conjur/authn-k8s/demo/consumers
+  - !group conjur/seed-generation/consumers
+  member: !host conjur/followers/k8s-follower
+# Define applications from K8s cluster that are allowed to retrieve from Conjur
+# Ref: https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/cjr-k8s-authn-client.htm
+- !policy
+  id: k8s-apps
+  body:
+  - !layer
+  - &hosts
+    - !host
+      id: cityapp-summon
+      annotations:
+        authn-k8s/namespace: cityapp
+        authn-k8s/service-account: cityapp-summon
+    - !host
+      id: cityapp-secretless
+      annotations:
+        authn-k8s/namespace: cityapp
+        authn-k8s/service-account: cityapp-secretless
+  - !grant
+    role: !layer
+    members: *hosts
+- !grant
+  role: !group conjur/authn-k8s/demo/consumers
+  member: !layer k8s-apps
