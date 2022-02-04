@@ -174,7 +174,7 @@ rm -f master-certificate.pem conjur-connect-followers.yaml conjur-follower.yaml
 ```console
 curl -L -o conjur-connect-apps.yaml https://github.com/joetanx/conjur-k8s/raw/main/conjur-connect-apps.yaml
 FOLLOWER_POD_NAME="$(kubectl get pods -n conjur | grep follower | head -n1 | awk '{print $1}')"
-kubectl exec -it $FOLLOWER_POD_NAME -c conjur -- cat /opt/conjur/etc/ssl/conjur.pem > follower-certificate.pem
+kubectl exec -it $FOLLOWER_POD_NAME -n conjur -c conjur-appliance -- cat /opt/conjur/etc/ssl/conjur.pem > follower-certificate.pem
 sed -i 's/^/    /' follower-certificate.pem
 sed -i '/<insert-follower-certificate>/ r follower-certificate.pem' conjur-connect-apps.yaml
 sed -i '/<insert-follower-certificate>/d' conjur-connect-apps.yaml
