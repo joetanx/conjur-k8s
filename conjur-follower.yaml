@@ -9,8 +9,6 @@ spec:
   ports:
   - port: 443
     name: https
-  - port: 636
-    name: ldaps
   selector:
     app: follower
 ---
@@ -30,7 +28,7 @@ spec:
         name: follower
         role: follower
     spec:
-      serviceAccountName: conjur-cluster
+      serviceAccountName: authn-k8s-sa
       volumes:
       - name: seedfile
         emptyDir:
@@ -43,21 +41,6 @@ spec:
         image: cyberark/dap-seedfetcher
         imagePullPolicy: IfNotPresent
         env:
-          - name: CONJUR_SEED_FILE_URL
-            value: https://conjur.vx/configuration/cyberark/seed/follower
-          - name: SEEDFILE_DIR
-            value: /tmp/seedfile
-          - name: FOLLOWER_HOSTNAME
-            value: follower   # this should match the service name
-          - name: AUTHENTICATOR_ID
-            value: demo
-          - name: CONJUR_ACCOUNT
-            value: cyberark
-          - name: CONJUR_SSL_CERTIFICATE
-            valueFrom:
-              configMapKeyRef:
-                name: master-certificate
-                key: ssl-certificate
           - name: MY_POD_NAME
             valueFrom:
               fieldRef:
@@ -66,36 +49,33 @@ spec:
             valueFrom:
               fieldRef:
                 fieldPath: metadata.namespace
-          - name: MY_POD_IP
-            valueFrom:
-              fieldRef:
-                fieldPath: status.podIP
+          - name: FOLLOWER_HOSTNAME
+            value: follower
+          - name: SEEDFILE_DIR
+            value: /tmp/seedfile
           - name: CONJUR_AUTHN_LOGIN
-            value: host/conjur/authn-k8s/demo/apps/default/service_account/conjur-cluster
+            value: host/conjur/followers/k8s-follower
+        envFrom:
+          - configMapRef:
+              name: conjur-connect-followers
         volumeMounts:
           - name: seedfile
             mountPath: /tmp/seedfile
           - name: conjur-token
             mountPath: /run/conjur
       containers:
-      - name: conjur
+      - name: conjur-appliance
+        image: registry.tld/conjur-appliance:12.4.1
         command: ["/tmp/seedfile/start-follower.sh"]
-        image: registry.tld/conjur-appliance:12.4.0
         imagePullPolicy: IfNotPresent
         env:
-          - name: CONJUR_AUTHENTICATORS
-            value: authn-k8s/demo
           - name: SEEDFILE_DIR
             value: /tmp/seedfile
+          - name: CONJUR_AUTHENTICATORS
+            value: authn-k8s/demo
         ports:
         - containerPort: 443
           name: https
-        - containerPort: 636
-          name: ldaps
-        - containerPort: 5432
-          name: pg-main
-        - containerPort: 5433
-          name: pg-audit
         readinessProbe:
           httpGet:
             path: /health
