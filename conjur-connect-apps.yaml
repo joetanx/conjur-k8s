@@ -1,0 +1,12 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: conjur-connect-apps
+  namespace: cityapp
+data:
+  CONJUR_ACCOUNT: cyberark
+  CONJUR_APPLIANCE_URL: https://follower.conjur.svc.cluster.local
+  CONJUR_AUTHN_URL: https://follower.conjur.svc.cluster.local/authn-k8s/demo
+  CONJUR_SSL_CERTIFICATE: |-
+    <insert-follower-certificate>
