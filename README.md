@@ -166,7 +166,7 @@ kubectl apply -f conjur-follower.yaml -n conjur
 ```
 - Clean-up
 ```console
-rm -f conjur-connect-followers.yaml conjur-follower.yaml
+rm -f master-certificate.pem conjur-connect-followers.yaml conjur-follower.yaml
 ```
 # 5. Preparing for cityapp deployment
 ## 5.1. Setup and apply ConfigMap for cityapp
@@ -182,7 +182,7 @@ kubectl apply -f conjur-connect-apps.yaml
 ```
 - Clean-up
 ```console
-rm -f conjur-connect-apps.yaml
+rm -f follower-certificate.pem conjur-connect-apps.yaml
 ```
 ## 5.2. Build cityapp container image
 ```console
