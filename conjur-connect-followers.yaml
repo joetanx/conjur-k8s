@@ -1,0 +1,13 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: conjur-connect-followers
+  namespace: conjur
+data:
+  CONJUR_ACCOUNT: cyberark
+  CONJUR_APPLIANCE_URL: https://conjur.vx
+  CONJUR_SEED_FILE_URL: https://conjur.vx/configuration/cyberark/seed/follower
+  AUTHENTICATOR_ID: demo
+  CONJUR_SSL_CERTIFICATE: |-
+    <insert-master-certificate>
