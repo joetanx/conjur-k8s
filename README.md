@@ -3,8 +3,11 @@
 - Conjur 12.4
 - Kubernetes 1.23
 ### Servers
-- conjur.vx: Conjur master, single-node Kubernetes cluster
-- mysql.vx: MySQL server
+| Hostname  | Role |
+| --- | --- |
+| conjur.vx  | Conjur master  |
+| mysql.vx  | MySQL server  |
+| * (any)  | Single-node Kubernetes cluster  |
 
 # 0. Kubernetes cluster
 - This demo should work with any flavour of Kubernetes clusters (On-prem, AKS, EKS), but is specifcally tested with a single-node on-prem Kubernetes cluster in my lab
