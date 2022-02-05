@@ -3,6 +3,9 @@
 - Conjur 12.4
 - Kubernetes 1.23
 
+# 0. Kubernetes cluster
+- This demo should work with any flavour of Kubernetes clusters (On-prem, AKS, EKS), but is specifcally tested with a single-node on-prem Kubernetes cluster in my lab
+- For a guide to setup a single-node on-prem Kubernetes cluster: https://github.com/joetanx/cri-o-kube
 # 1. Setup MySQL database
 - Setup MySQL database according to this guide: https://github.com/joetanx/mysql-world_db
 # 2. Setup Conjur master
