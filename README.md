@@ -1,3 +1,8 @@
+### Software Versions
+- RHEL 8.5
+- Conjur 12.4
+- Kubernetes 1.23
+
 # 1. Setup MySQL database
 - Setup MySQL database according to this guide: https://github.com/joetanx/mysql-world_db
 # 2. Setup Conjur master
