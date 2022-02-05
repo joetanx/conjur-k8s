@@ -26,6 +26,7 @@
     - Creates `k8s-apps` layer with 'k8s-apps\cityapp-summon` and 'k8s-apps\cityapp-secretless` hosts as members
     - Adds `k8s-apps` layer to `conjur/authn-k8s/demo/consumers` to allow authentication to Kubernetes authenticator
     - Adds `k8s-apps` layer to `world_db/consumers` to allow access to secrets in `world_db`
+> `authn-k8s.yaml` builds on top of `app-vars.yaml` in https://github.com/joetanx/conjur-master. Loading `authn-k8s.yaml` without having `app-vars.yaml` loaded previously will not work.
 ```console
 curl -L -o authn-k8s.yaml https://github.com/joetanx/conjur-k8s/raw/main/authn-k8s.yaml
 conjur policy load -f authn-k8s.yaml -b root
