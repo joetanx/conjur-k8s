@@ -2,6 +2,9 @@
 - RHEL 8.5
 - Conjur 12.4
 - Kubernetes 1.23
+### Servers
+- conjur.vx: Conjur master, single-node Kubernetes cluster
+- mysql.vx: MySQL server
 
 # 0. Kubernetes cluster
 - This demo should work with any flavour of Kubernetes clusters (On-prem, AKS, EKS), but is specifcally tested with a single-node on-prem Kubernetes cluster in my lab
