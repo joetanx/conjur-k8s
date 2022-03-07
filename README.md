@@ -30,14 +30,14 @@
   - Define identity in Conjur for Follower in Kubernetes
     - Ref: (step 2) https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-follower.htm
     - Creates `conjur/followers` policy
-    - Creates 'conjur/followers/k8s-follower` host with specifications for `conjur` namespace and `authn-k8s-sa` service account
-    - Adds 'conjur/followers/k8s-follower` host to `conjur/authn-k8s/demo/consumers` to allow authentication to Kubernetes authenticator
-    - Adds 'conjur/followers/k8s-follower` host to `conjur/seed-generation/consumers` to allow seed retrieval from seed generation webservice
+    - Creates `conjur/followers/k8s-follower` host with specifications for `conjur` namespace and `authn-k8s-sa` service account
+    - Adds `conjur/followers/k8s-follower` host to `conjur/authn-k8s/demo/consumers` to allow authentication to Kubernetes authenticator
+    - Adds `conjur/followers/k8s-follower` host to `conjur/seed-generation/consumers` to allow seed retrieval from seed generation webservice
   - Define applications as Conjur hosts in policy
     - Ref: (setp 2) https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/cjr-k8s-authn-client.htm
     - Creates `k8s-apps` policy
-    - Creates 'k8s-apps\cityapp-summon` and 'k8s-apps\cityapp-secretless` hosts with specifications for `cityapp` namespace and `cityapp-summon`/`cityapp-secretless` service accounts
-    - Creates `k8s-apps` layer with 'k8s-apps\cityapp-summon` and 'k8s-apps\cityapp-secretless` hosts as members
+    - Creates `k8s-apps/cityapp-summon` and `k8s-apps/cityapp-secretless` hosts with specifications for `cityapp` namespace and `cityapp-summon`/`cityapp-secretless` service accounts
+    - Creates `k8s-apps` layer with `k8s-apps\cityapp-summon` and `k8s-apps\cityapp-secretless` hosts as members
     - Adds `k8s-apps` layer to `conjur/authn-k8s/demo/consumers` to allow authentication to Kubernetes authenticator
     - Adds `k8s-apps` layer to `world_db/consumers` to allow access to secrets in `world_db`
 > `authn-k8s.yaml` builds on top of `app-vars.yaml` in https://github.com/joetanx/conjur-master. Loading `authn-k8s.yaml` without having `app-vars.yaml` loaded previously will not work.
