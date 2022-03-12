@@ -13,10 +13,13 @@
 # 0. Kubernetes cluster
 - This demo should work with any flavour of Kubernetes clusters (On-prem, AKS, EKS), but is specifcally tested with a single-node on-prem Kubernetes cluster in my lab
 - For a guide to setup a single-node on-prem Kubernetes cluster: https://github.com/joetanx/cri-o-kube
+
 # 1. Setup MySQL database
 - Setup MySQL database according to this guide: https://github.com/joetanx/mysql-world_db
+
 # 2. Setup Conjur master
 - Setup Conjur master according to this guide: https://github.com/joetanx/conjur-master
+
 # 3. Preparing necessary configurations for Kubernetes authenticator
 ## 3.1. Configure and enable Kubernetes authenticator
 - The policy `authn-k8s.yaml` performs the following:
@@ -50,6 +53,7 @@ conjur policy load -f authn-k8s.yaml -b root
 ```console
 rm -f authn-k8s.yaml
 ```
+
 ## 3.2. Initialize the Kubernetes authenticator CA
 - Ref: (step 4) https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-k8s-authn.htm
 - Generate the CA with openssl and set them to respective variables created by `authn-k8s.yaml` in previous step
@@ -71,6 +75,7 @@ rm -f ca.pem ca.key
 ```console
 podman exec conjur chpst -u conjur conjur-plugin-service possum rake authn_k8s:ca_init["conjur/authn-k8s/demo"]
 ```
+
 ## 3.3. Create Kubernetes resources for the Kubernetes Authenticator
 - Ref: (step 5) https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-k8s-authn.htm
 - The policy `conjur-config-prep.yaml` performs the following:
@@ -86,6 +91,7 @@ kubectl apply -f conjur-config-prep.yaml
 ```console
 rm -f conjur-config-prep.yaml
 ```
+
 ## 3.4. Configure Conjur to access the Kubernetes API
 - Ref: (step 6) https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-k8s-authn.htm
 - Conjur requires the following information to access the Kubernetes API
@@ -111,6 +117,7 @@ conjur variable set -i conjur/authn-k8s/demo/kubernetes/ca-cert -v "$CA_CERT"
 conjur variable set -i conjur/authn-k8s/demo/kubernetes/service-account-token -v "$SERVICE_ACCOUNT_TOKEN"
 conjur variable set -i conjur/authn-k8s/demo/kubernetes/api-url -v "$API_URL"
 ```
+
 ## 3.5. Allowlist the Kubernetes authenticator in Conjur
 - Ref: (step 7) https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-k8s-authn.htm
 - Ref: https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Operations/Services/authentication-types.htm#!#Allowlis
@@ -122,6 +129,7 @@ podman exec conjur sv restart conjur
 ```console
 curl -k https://conjur.vx/info
 ```
+
 ## 3.6. Load hosts in CoreDNS
 - The `dap-seedfetcher` container uses `wget` to retrieve the seed file from Conjur Master.
 - Depending on network configurations, some dual stacked kubernetes may not be able to resolve static host entries in DNS properly, causing `wget: unable to resolve host address` error.
@@ -164,6 +172,7 @@ kubectl edit cm coredns -n kube-system
 ```console
 kubectl rollout restart deploy coredns -n kube-system
 ```
+
 # 4. Set up Follower in Kubernetes
 - Ref: (step 4-6) https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-follower.htm
 - Setup and apply ConfigMap for Follower
@@ -184,6 +193,7 @@ kubectl apply -f conjur-follower.yaml -n conjur
 ```console
 rm -f master-certificate.pem conjur-connect-followers.yaml conjur-follower.yaml
 ```
+
 # 5. Preparing for cityapp deployment
 ## 5.1. Setup and apply ConfigMap for cityapp
 - Ref: https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-set-up-apps.htm
@@ -200,6 +210,7 @@ kubectl apply -f conjur-connect-apps.yaml
 ```console
 rm -f follower-certificate.pem conjur-connect-apps.yaml
 ```
+
 ## 5.2. Build cityapp container image
 ```console
 mkdir cityapp && cd $_
@@ -211,6 +222,7 @@ tar xvf cityapp.tgz
 ```console
 cd .. && rm -rf cityapp
 ```
+
 ## 5.3. Deploy cityapp-hardcode
 - Notice that the MySQL credentials are hard-coded in `cityapp-hardcode.yaml`
 ```console
@@ -225,6 +237,7 @@ rm -f cityapp-hardcode.yaml
 ```console
 kubectl get pods -o wide -n cityapp
 ```
+
 # 6. Deploy cityapp-summon
 -  Load the summon configuration yaml file as Kubernetes ConfigMap
 ```console
@@ -240,6 +253,7 @@ kubectl apply -f cityapp-summon.yaml -n cityapp
 ```console
 rm -f *.yaml
 ```
+
 # 7. Deploy cityapp-secretless
 -  Load the secretless configuration yaml file as Kubernetes ConfigMap
 ```console
