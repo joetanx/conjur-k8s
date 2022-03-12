@@ -1,7 +1,7 @@
 # Integrate Kubernetes with Conjur Enterprise using the K8s authenticator
 ### Software Versions
 - RHEL 8.5
-- Conjur 12.4
+- Conjur Enterprise 12.4
 - Kubernetes 1.23
 ### Servers
 | Hostname  | Role |
