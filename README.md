@@ -5,6 +5,7 @@
 - Kubernetes 1.23
 
 ### Servers
+
 | Hostname  | Role |
 | --- | --- |
 | conjur.vx  | Conjur master  |
