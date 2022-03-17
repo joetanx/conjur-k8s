@@ -3,6 +3,7 @@
 - RHEL 8.5
 - Conjur Enterprise 12.4
 - Kubernetes 1.23
+
 ### Servers
 | Hostname  | Role |
 | --- | --- |
