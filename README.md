@@ -183,7 +183,7 @@ kubectl -n conjur apply -f follower.yaml
 - Build cityapp container image
 ```console
 mkdir cityapp && cd $_
-curl -L -o cityapp.tgz https://github.com/joetanx/conjur-k8s/raw/main/cityapp.tgz
+curl -L -o cityapp.tgz https://github.com/joetanx/conjur-k8s-jwt/raw/main/cityapp.tgz
 tar xvf cityapp.tgz
 ./build.sh
 ```
@@ -195,7 +195,7 @@ cd .. && rm -rf cityapp
 ## 5.2. Deploy cityapp-hardcode
 - Notice that the MySQL credentials are hard-coded in `cityapp-hardcode.yaml`
 ```console
-curl -L -o cityapp-hardcode.yaml https://github.com/joetanx/conjur-jwt-k8s/raw/main/cityapp-hardcode.yaml
+curl -L -o cityapp-hardcode.yaml https://github.com/joetanx/conjur-k8s-jwt/raw/main/cityapp-hardcode.yaml
 kubectl apply -f cityapp-hardcode.yaml -n cityapp
 ```
 - Clean-up
