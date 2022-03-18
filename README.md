@@ -1,4 +1,10 @@
 # Integrate Kubernetes with Conjur Enterprise using the JWT authenticator
+##
+Overview:
+- Construct the JWT authenticator for Kubernetes
+- Deploy Conjur follower in Kubernetes
+- Deploy demonstration application `cityapp`: hard-code, summon, and secretless methods
+
 ### Software Versions
 - RHEL 8.5
 - Conjur Enterprise 12.5
@@ -41,6 +47,7 @@
       - Ref: (step 2) <https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/cjr-k8s-authn-client-authjwt.htm#Setuptheapplicationtoretrievesecrets>
       - The demo applications are granted access to the JWT authenticator `conjur/authn-jwt/k8s` and demo database secrets `world_db` by adding them to `consumers` group of respective webservice and policy
 - **Note**: `authn-jwt-k8s.yaml` builds on top of `app-vars.yaml` in https://joetanx.github.io/conjur-master. Loading `authn-jwt-k8s.yaml` without having `app-vars.yaml` loaded previously will not work.
+- Download and load the Conjur policy
 ```console
 curl -L -o authn-jwt-k8s.yaml https://github.com/joetanx/conjur-k8s-jwt/raw/main/authn-jwt-k8s.yaml
 conjur policy load -f authn-jwt-k8s.yaml -b root
@@ -75,7 +82,7 @@ curl -k https://conjur.vx/info
 ```
 
 ## 3.4 Prepare the ConfigMaps
-- The follower and application pods in Kubernetes needs to be able to locate the Conjur master and follower - this is done by the means of ConfigMaps
+- The Conjur master and follwer information is passed to the follower and application pods using ConfigMaps
 - Prepare the namespace `conjur` and `cityapp`, and service account `authn-jwt-sa`
 ```console
 curl -L -o conjur-k8s-prep.yaml https://github.com/joetanx/conjur-k8s-jwt/raw/main/conjur-k8s-prep.yaml
@@ -85,12 +92,7 @@ kubectl apply -f conjur-k8s-prep.yaml
 ```console
 rm -f conjur-k8s-prep.yaml
 ```
-- Prepare the variables required for ConfigMaps
-- **Note** on `CONJUR_SSL_CERTIFICATE`:
-  - `dap-seedfetcher` container needs to verify the Conjur **master** certificate
-  - `conjur-authn-k8s-client` and `secretless-broker` containers needs to verify the Conjur **follower** certificate
-  - Since both the master and follower certificates in this demo are signed by the same CA `central.pem`, using the CA certificate will suffice
-
+- Prepare the necessary values as environments variables to be loaded into ConfigMaps
 ```console
 CA_CERT="$(curl -L https://github.com/joetanx/conjur-k8s-jwt/raw/main/central.pem)"
 CONJUR_MASTER_URL=https://conjur.vx
@@ -100,6 +102,12 @@ CONJUR_ACCOUNT=cyberark
 CONJUR_SEED_FILE_URL=$CONJUR_MASTER_URL/configuration/$CONJUR_ACCOUNT/seed/follower
 CONJUR_AUTHN_URL=$CONJUR_FOLLOWER_URL/authn-jwt/k8s
 ```
+
+- **Note** on `CONJUR_SSL_CERTIFICATE`:
+  - `dap-seedfetcher` container needs to verify the Conjur **master** certificate
+  - `conjur-authn-k8s-client` and `secretless-broker` containers needs to verify the Conjur **follower** certificate
+  - Since both the master and follower certificates in this demo are signed by the same CA `central.pem`, using the CA certificate will suffice
+
 - Create ConfigMap `conjur-connect-follower` for follower
 ```console
 kubectl -n conjur create configmap conjur-connect-followers \
@@ -117,6 +125,7 @@ kubectl -n cityapp create configmap conjur-connect-apps \
 --from-literal CONJUR_AUTHN_URL=$CONJUR_AUTHN_URL \
 --from-literal "CONJUR_SSL_CERTIFICATE=${CA_CERT}"
 ```
+
 ## 3.5. Load hosts in CoreDNS
 - The `dap-seedfetcher` container uses `wget` to retrieve the seed file from Conjur Master.
 - Depending on network configurations, some dual stacked kubernetes may not be able to resolve static host entries in DNS properly, causing `wget: unable to resolve host address` error.
@@ -170,7 +179,7 @@ kubectl -n conjur apply -f follower.yaml
 ```
 
 # 5. Preparing for cityapp deployment
-- The cityapp application is used to demostrate the various scenarios: hard-coded, summon, and secretless ways to consume the secrets
+- The cityapp application is used to demostrate the various scenarios: hard-coded, summon, and secretless methods to consume the secrets
 - Build cityapp container image
 ```console
 mkdir cityapp && cd $_
