@@ -1,0 +1,101 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cityapp-summon
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cityapp-summon
+  labels:
+    app: cityapp-summon
+spec:
+  ports:
+  - port: 80
+    nodePort: 30081
+    name: http
+  selector:
+    app: cityapp-summon
+  type: NodePort
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: cityapp-summon
+  name: cityapp-summon
+spec:
+  selector:
+    matchLabels:
+      app: cityapp-summon
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: cityapp-summon
+    spec:
+      serviceAccountName: cityapp-summon
+      containers:
+      - image: localhost/cityapp:1.0
+        imagePullPolicy: IfNotPresent
+        name: cityapp
+        env:
+          - name: CONJUR_AUTHN_TOKEN_FILE
+            value: /run/conjur/access-token
+        ports:
+          - containerPort: 80
+            name: http
+        envFrom:
+        - configMapRef:
+            name: cityapp-cm
+        volumeMounts:
+        - mountPath: /run/conjur
+          name: conjur-access-token
+          readOnly: true
+        - mountPath: /etc/summon
+          name: config
+          readOnly: true
+        command: [ "summon", "-f", "/etc/summon/cityapp-summon-cm.yaml", "ruby", "/usr/src/cityapp.rb", "-o", "0.0.0.0" ]
+      initContainers:
+      - image: cyberark/conjur-authn-k8s-client
+        imagePullPolicy: IfNotPresent
+        name: authenticator
+        env:
+          - name: JWT_TOKEN_PATH
+            value: /var/run/secrets/tokens/jwt
+          - name: CONTAINER_MODE
+            value: init
+          - name: MY_POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: MY_POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+        envFrom:
+          - configMapRef:
+              name: conjur-connect-apps
+        volumeMounts:
+          - mountPath: /run/conjur
+            name: conjur-access-token
+          - mountPath: /var/run/secrets/tokens
+            name: jwt-token
+      volumes:
+        - name: conjur-access-token
+          emptyDir:
+            medium: Memory
+        - name: conjur-client-ssl
+          emptyDir:
+            medium: Memory
+        - name: jwt-token
+          projected:
+            sources:
+              - serviceAccountToken:
+                  path: jwt
+                  expirationSeconds: 6000
+                  audience: vxlab
+        - name: config
+          configMap:
+            name: cityapp-summon-cm
