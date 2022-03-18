@@ -40,7 +40,7 @@
     - Demo application `cityapp-summon` and `cityapp-secretless` identified by `system:serviceaccount:cityapp:cityapp-summon` and `system:serviceaccount:cityapp:cityapp-secretless`
       - Ref: (step 2) <https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/cjr-k8s-authn-client-authjwt.htm#Setuptheapplicationtoretrievesecrets>
       - The demo applications are granted access to the JWT authenticator `conjur/authn-jwt/k8s` and demo database secrets `world_db` by adding them to `consumers` group of respective webservice and policy
-> **Note**: `authn-jwt-k8s.yaml` builds on top of `app-vars.yaml` in https://joetanx.github.io/conjur-master. Loading `authn-jwt-k8s.yaml` without having `app-vars.yaml` loaded previously will not work.
+- **Note**: `authn-jwt-k8s.yaml` builds on top of `app-vars.yaml` in https://joetanx.github.io/conjur-master. Loading `authn-jwt-k8s.yaml` without having `app-vars.yaml` loaded previously will not work.
 ```console
 curl -L -o authn-jwt-k8s.yaml https://github.com/joetanx/conjur-k8s-jwt/raw/main/authn-jwt-k8s.yaml
 conjur policy load -f authn-jwt-k8s.yaml -b root
@@ -88,8 +88,9 @@ rm -f conjur-k8s-prep.yaml
 - Prepare the variables required for ConfigMaps
 - **Note** on `CONJUR_SSL_CERTIFICATE`:
   - `dap-seedfetcher` container needs to verify the Conjur **master** certificate
-  - `conjur-authn-k8s-client` and `secretless-broker` needs to verify the Conjur **follower** certificate
+  - `conjur-authn-k8s-client` and `secretless-broker` containers needs to verify the Conjur **follower** certificate
   - Since both the master and follower certificates in this demo are signed by the same CA `central.pem`, using the CA certificate will suffice
+
 ```console
 CA_CERT="$(curl -L https://github.com/joetanx/conjur-k8s-jwt/raw/main/central.pem)"
 CONJUR_MASTER_URL=https://conjur.vx
