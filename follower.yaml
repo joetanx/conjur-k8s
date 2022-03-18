@@ -58,6 +58,10 @@ spec:
         image: cyberark/dap-seedfetcher
         imagePullPolicy: IfNotPresent
         env:
+          - name: MY_POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
           - name: MY_POD_NAMESPACE
             valueFrom:
               fieldRef:
@@ -72,7 +76,7 @@ spec:
             value: authn-jwt
         envFrom:
           - configMapRef:
-              name: follower-cm
+              name: conjur-connect-followers
         volumeMounts:
           - name: seedfile
             mountPath: /tmp/seedfile
