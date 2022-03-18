@@ -48,7 +48,7 @@ spec:
             name: http
         envFrom:
         - configMapRef:
-            name: cityapp-cm
+            name: conjur-connect-apps
         volumeMounts:
         - mountPath: /run/conjur
           name: conjur-access-token
