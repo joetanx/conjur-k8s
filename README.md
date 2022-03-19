@@ -1,5 +1,4 @@
 # Integrate Kubernetes with Conjur Enterprise using the JWT authenticator
-##
 Overview:
 - Construct the JWT authenticator for Kubernetes
 - Deploy Conjur follower in Kubernetes
