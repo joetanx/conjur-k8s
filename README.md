@@ -45,7 +45,7 @@ Overview:
     - Demo application `cityapp-summon` and `cityapp-secretless` identified by `system:serviceaccount:cityapp:cityapp-summon` and `system:serviceaccount:cityapp:cityapp-secretless`
       - Ref: [2. Define the application as a Conjur host in policy + 3.Grant access to secrets](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/cjr-k8s-authn-client-authjwt.htm#Setuptheapplicationtoretrievesecrets)
       - The demo applications are granted access to the JWT authenticator `conjur/authn-jwt/k8s` and demo database secrets `world_db` by adding them to `consumers` group of respective webservice and policy
-- **Note**: `authn-jwt-k8s.yaml` builds on top of `app-vars.yaml` in https://joetanx.github.io/conjur-master. Loading `authn-jwt-k8s.yaml` without having `app-vars.yaml` loaded previously will not work.
+- ☝️ **Note**: `authn-jwt-k8s.yaml` builds on top of `app-vars.yaml` in https://joetanx.github.io/conjur-master. Loading `authn-jwt-k8s.yaml` without having `app-vars.yaml` loaded previously will not work.
 - Download and load the Conjur policy
 ```console
 curl -L -o authn-jwt-k8s.yaml https://github.com/joetanx/conjur-k8s-jwt/raw/main/authn-jwt-k8s.yaml
@@ -102,7 +102,7 @@ CONJUR_SEED_FILE_URL=$CONJUR_MASTER_URL/configuration/$CONJUR_ACCOUNT/seed/follo
 CONJUR_AUTHN_URL=$CONJUR_FOLLOWER_URL/authn-jwt/k8s
 ```
 
-- **Note** on `CONJUR_SSL_CERTIFICATE`:
+- ☝️ **Note** on `CONJUR_SSL_CERTIFICATE`:
   - `dap-seedfetcher` container needs to verify the Conjur **master** certificate
   - `conjur-authn-k8s-client` and `secretless-broker` containers need to verify the Conjur **follower** certificate
   - Since both the master and follower certificates in this demo are signed by the same CA `central.pem`, using the CA certificate will suffice
@@ -199,6 +199,7 @@ cd .. && rm -rf cityapp
 ```
 
 ## 5.2. Deploy cityapp-hardcode
+- Verify that the cityapp container image works with a deployment with hard-coded secrets
 - Notice that the MySQL credentials are hard-coded in `cityapp-hardcode.yaml`
 ```console
 curl -L -o cityapp-hardcode.yaml https://github.com/joetanx/conjur-k8s-jwt/raw/main/cityapp-hardcode.yaml
@@ -212,14 +213,29 @@ rm -f cityapp-hardcode.yaml
 ```console
 kubectl get pods -o wide -n cityapp
 ```
+- Browse to the Kubernetes node on port 30080 `http://<kube-node-fqdn>:30080` to verify that the application is working
 
 # 6. Deploy cityapp-summon
--  Load the summon configuration yaml file as Kubernetes ConfigMap
+## 6.1. Retrieving credentials using Summon
+- The application can retrieve credentials from Conjur with 2 main components
+  1. `cyberark/conjur-authn-k8s-client` init container which handles authentication to Conjur and retrieve the Conjur authentication token
+  2. Summon library in the application which uses the Conjur authentication token to retrieve credentials
+
+    - Ref: [CyberArk Summon Repository](https://github.com/cyberark/summon)
+- Credentials retrieval flow with Summon:
+![image](images/architectureCityappSummon.png)
+
+## 6.2. Prepare the ConfigMap to be used by Summon
+- Summon reads the identifiers for the secrets that an application needs from a yaml file
+- Ref: [Prepare applications to retrieve secrets](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/cjr-k8s-authn-client-authjwt.htm#Prepareapplicationstoretrievesecrets)
+- We will map the `cityapp-summon-cm.yaml` to the `cityapp` container using a ConfigMap
+- ☝️ Both summon and authenticator container also need to locate Conjur to authenticate and retrieve credentials, this was done in the previous step where we loaded the `conjur-connect-apps` ConfigMap
 ```console
 curl -L -o cityapp-summon-cm.yaml https://github.com/joetanx/conjur-k8s-jwt/raw/main/cityapp-summon-cm.yaml
 kubectl -n cityapp create configmap cityapp-summon-cm --from-file=cityapp-summon-cm.yaml
 ```
-- Deploy the Summon-based cityapp
+
+## 6.3. Deploy the Summon-based cityapp
 ```console
 curl -L -o cityapp-summon.yaml https://github.com/joetanx/conjur-k8s-jwt/raw/main/cityapp-summon.yaml
 kubectl -n cityapp apply -f cityapp-summon.yaml
@@ -228,14 +244,36 @@ kubectl -n cityapp apply -f cityapp-summon.yaml
 ```console
 rm -f *.yaml
 ```
+- Verify that the application is deployed successfully
+```console
+kubectl get pods -o wide -n cityapp
+```
+- Browse to the Kubernetes node on port 30081 `http://<kube-node-fqdn>:30081` to verify that the application is working
+  - Notice that the database connection details list the credentials retrieved from Conjur
 
 # 7. Deploy cityapp-secretless
--  Load the secretless configuration yaml file as Kubernetes ConfigMap
+## 7.1. Avoiding secrets from ever touching your application - Secretless Broker
+- The Secretless Broker enables applications to connect securely to services without ever having to fetch secrets
+- In this demo, `secretless broker` will run as a sidecar container alongside with the `cityapp` container
+- The Secretless Broker will
+  - Authenticate to Conjur
+  - Retreive the secrets
+  - Connect to the database
+  - Enable a database listener for the application to connect to
+- Application connection flow with Secretless Broker:
+![image](images/architectureCityappSecretless.png)
+
+## 7.2. Prepare the ConfigMap to be used by Secretless Broker
+- Secretless Broker needs some configuration to determine where to listen for new connection requests, where to route those connections, and where to get the credentials for each connection.
+- Ref: [Prepare the Secretless configuration](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-secretless-sidecar.htm#PreparetheSecretlessconfiguration)
+- We will map the `cityapp-secretless-cm.yaml` to the `cityapp` container using a ConfigMap
+- ☝️ Secretless Broker also need to locate Conjur to authenticate and retrieve credentials, this was done in the previous step where we loaded the `conjur-connect-apps` ConfigMap
 ```console
 curl -L -o cityapp-secretless-cm.yaml https://github.com/joetanx/conjur-k8s-jwt/raw/main/cityapp-secretless-cm.yaml
 kubectl -n cityapp create configmap cityapp-secretless-cm --from-file=cityapp-secretless-cm.yaml
 ```
-- Deploy the Secretless-based cityapp
+
+## 7.3. Deploy the Secretless-based cityapp
 ```console
 curl -L -o cityapp-secretless.yaml https://github.com/joetanx/conjur-k8s-jwt/raw/main/cityapp-secretless.yaml
 kubectl -n cityapp apply -f cityapp-secretless.yaml
@@ -244,3 +282,9 @@ kubectl -n cityapp apply -f cityapp-secretless.yaml
 ```console
 rm -f *.yaml
 ```
+- Verify that the application is deployed successfully
+```console
+kubectl get pods -o wide -n cityapp
+```
+- Browse to the Kubernetes node on port 30082 `http://<kube-node-fqdn>:30082` to verify that the application is working
+  - Notice that the database connection details list that the application is connecting to `127.0.0.1` using empty credentials
