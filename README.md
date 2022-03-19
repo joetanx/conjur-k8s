@@ -32,19 +32,19 @@ Overview:
 ## 3.1. Configure and enable JWT authenticator
 - The policy `authn-jwt-k8s.yaml` performs the following:
   - Define the JWT authenticator endpoint in Conjur
-    - Ref: (step 2) <https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-jwt-authn.htm#ConfiguretheJWTAuthenticator>
+    - Ref: [2. Define the JWT Authenticator endpoint in Conjur](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-jwt-authn.htm#ConfiguretheJWTAuthenticator)
     - Creates `conjur/authn-jwt/k8s` policy with the necessary variables
     - Creates the `webservice` for the authenticator with `consumers` group allowed to authenticate to the webservice
   - Enable the seed generation service
-    - Ref: (step 6) <https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-jwt-authn.htm#ConfiguretheJWTAuthenticator>
+    - Ref: [6. Enable the seed generation service](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-jwt-authn.htm#ConfiguretheJWTAuthenticator)
     - Creates `conjur/seed-generation` policy
     - Creates the `webservice` for the seed generation with `consumers` group allowed to authenticate to the webservice
   - Define `jwt-apps/k8s` policy with:
     - Conjur Follower in Kubernetes identified by `system:serviceaccount:conjur:authn-jwt-sa`
-      - Ref: (step 2) <https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-jwt-follower.htm>
+      - Ref: [2. Define an identity in Conjur for the Conjur Follower](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-jwt-follower.htm)
       - The Conjur Follower is granted access to the JWT authenticator `conjur/authn-jwt/k8s` and seed generation `conjur/seed-generation` webservices by adding it into `consumers` group of respective webservices
     - Demo application `cityapp-summon` and `cityapp-secretless` identified by `system:serviceaccount:cityapp:cityapp-summon` and `system:serviceaccount:cityapp:cityapp-secretless`
-      - Ref: (step 2) <https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/cjr-k8s-authn-client-authjwt.htm#Setuptheapplicationtoretrievesecrets>
+      - Ref: [2. Define the application as a Conjur host in policy + 3.Grant access to secrets](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/cjr-k8s-authn-client-authjwt.htm#Setuptheapplicationtoretrievesecrets)
       - The demo applications are granted access to the JWT authenticator `conjur/authn-jwt/k8s` and demo database secrets `world_db` by adding them to `consumers` group of respective webservice and policy
 - **Note**: `authn-jwt-k8s.yaml` builds on top of `app-vars.yaml` in https://joetanx.github.io/conjur-master. Loading `authn-jwt-k8s.yaml` without having `app-vars.yaml` loaded previously will not work.
 - Download and load the Conjur policy
@@ -58,7 +58,7 @@ rm -f authn-jwt-k8s.yaml
 ```
 
 ## 3.2 Populate the variables required by the JWT Authenticator
-- Ref: (step 3) <https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-jwt-authn.htm#ConfiguretheJWTAuthenticator>
+- Ref: [3. Populate the policy variables](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-jwt-authn.htm#ConfiguretheJWTAuthenticator)
 ```console
 PUBLIC_KEYS="$(kubectl get --raw $(kubectl get --raw /.well-known/openid-configuration | jq -r '.jwks_uri'))"
 ISSUER="$(kubectl get --raw /.well-known/openid-configuration | jq -r '.issuer')"
@@ -70,8 +70,8 @@ conjur variable set -i conjur/authn-jwt/k8s/audience -v vxlab
 ```
 
 ## 3.3 Allowlist the JWT authenticator in Conjur
-- Ref: (step 4) <https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-jwt-authn.htm#ConfiguretheJWTAuthenticator>
-- Ref: <https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Operations/Services/authentication-types.htm#Allowlis>
+- Ref: [4. Allowlist the JWT Authenticator in Conjur](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-jwt-authn.htm#ConfiguretheJWTAuthenticator)
+- Ref: [Step 1: Allowlist the authenticators](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Operations/Services/authentication-types.htm#Allowlis)
 ```console
 podman exec conjur sed -i -e '$aCONJUR_AUTHENTICATORS="authn,authn-jwt/k8s"' /opt/conjur/etc/conjur.conf
 podman exec conjur sv restart conjur
@@ -109,6 +109,7 @@ CONJUR_AUTHN_URL=$CONJUR_FOLLOWER_URL/authn-jwt/k8s
   - Since both the master and follower certificates in this demo are signed by the same CA `central.pem`, using the CA certificate will suffice
 
 - Create ConfigMap `conjur-connect-follower` for follower
+  - Ref: [3. Set up a ConfigMap](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-jwt-follower.htm)
 ```console
 kubectl -n conjur create configmap conjur-connect-followers \
 --from-literal CONJUR_ACCOUNT=$CONJUR_ACCOUNT \
@@ -118,6 +119,8 @@ kubectl -n conjur create configmap conjur-connect-followers \
 --from-literal "CONJUR_SSL_CERTIFICATE=${CA_CERT}"
 ```
 - Create ConfigMap `conjur-connect-apps` for applications
+  - Ref: [Prepare the application namespace, raw Kubernetes manifest](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-set-up-apps.htm#Preparetheapplicationnamespace)
+  - Ref: [CyberArk raw manifest repository](https://github.com/cyberark/conjur-authn-k8s-client/blob/master/helm/conjur-config-namespace-prep/generated/conjur-config-namespace-prep.yaml)
 ```console
 kubectl -n cityapp create configmap conjur-connect-apps \
 --from-literal CONJUR_ACCOUNT=$CONJUR_ACCOUNT \
@@ -170,8 +173,8 @@ kubectl rollout restart deploy coredns -n kube-system
 ```
 
 # 4. Deploy the follower
-- Ref: (step 4-5) <https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-jwt-follower.htm>
 - The `follower.yaml` manifest defines the necessary configurations to deploy the Conjur Follower into Kubernetes; review the file and read the ref link to understand how it works
+  - Ref: [4. Set up the Follower service and deployment manifest](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-jwt-follower.htm)
 - Download the manifest file and deploy into the Kubernetes cluster
 ```console
 curl -L -o follower.yaml https://github.com/joetanx/conjur-k8s-jwt/raw/main/follower.yaml
