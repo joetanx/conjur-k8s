@@ -55,7 +55,7 @@ spec:
             readOnly: true
       initContainers:
       - name: authenticator
-        image: cyberark/dap-seedfetcher
+        image: docker.io/cyberark/dap-seedfetcher
         imagePullPolicy: IfNotPresent
         env:
           - name: MY_POD_NAME
