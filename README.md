@@ -180,6 +180,10 @@ kubectl rollout restart deploy coredns -n kube-system
 curl -L -o follower.yaml https://github.com/joetanx/conjur-k8s-jwt/raw/main/follower.yaml
 kubectl -n conjur apply -f follower.yaml
 ```
+- Clean-up
+```console
+rm -f follower.yaml
+```
 
 # 5. Preparing for cityapp deployment
 - The cityapp application is used to demostrate the various scenarios: hard-coded, summon, and secretless methods to consume the secrets
