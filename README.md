@@ -81,7 +81,7 @@ curl -k https://conjur.vx/info
 ```
 
 ## 3.4 Prepare the ConfigMaps
-- The Conjur master and follwer information is passed to the follower and application pods using ConfigMaps
+- The Conjur master and follower information is passed to the follower and application pods using ConfigMaps
 - Prepare the namespace `conjur` and `cityapp`, and service account `authn-jwt-sa`
 ```console
 curl -L -o conjur-k8s-prep.yaml https://github.com/joetanx/conjur-k8s-jwt/raw/main/conjur-k8s-prep.yaml
@@ -104,7 +104,7 @@ CONJUR_AUTHN_URL=$CONJUR_FOLLOWER_URL/authn-jwt/k8s
 
 - **Note** on `CONJUR_SSL_CERTIFICATE`:
   - `dap-seedfetcher` container needs to verify the Conjur **master** certificate
-  - `conjur-authn-k8s-client` and `secretless-broker` containers needs to verify the Conjur **follower** certificate
+  - `conjur-authn-k8s-client` and `secretless-broker` containers need to verify the Conjur **follower** certificate
   - Since both the master and follower certificates in this demo are signed by the same CA `central.pem`, using the CA certificate will suffice
 
 - Create ConfigMap `conjur-connect-follower` for follower
