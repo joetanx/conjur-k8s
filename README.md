@@ -220,7 +220,6 @@ kubectl get pods -o wide -n cityapp
 - The application can retrieve credentials from Conjur with 2 main components
   1. `cyberark/conjur-authn-k8s-client` init container which handles authentication to Conjur and retrieve the Conjur authentication token
   2. Summon library in the application which uses the Conjur authentication token to retrieve credentials
-
     - Ref: [CyberArk Summon Repository](https://github.com/cyberark/summon)
 - Credentials retrieval flow with Summon:
 ![image](images/architectureCityappSummon.png)
@@ -254,6 +253,7 @@ kubectl get pods -o wide -n cityapp
 # 7. Deploy cityapp-secretless
 ## 7.1. Avoiding secrets from ever touching your application - Secretless Broker
 - The Secretless Broker enables applications to connect securely to services without ever having to fetch secrets
+  - Ref: [Secretless Broker Sidecar](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-secretless-sidecar.htm)
 - In this demo, `secretless broker` will run as a sidecar container alongside with the `cityapp` container
 - The Secretless Broker will
   - Authenticate to Conjur
