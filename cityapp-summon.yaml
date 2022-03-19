@@ -58,7 +58,7 @@ spec:
           readOnly: true
         command: [ "summon", "-f", "/etc/summon/cityapp-summon-cm.yaml", "ruby", "/usr/src/cityapp.rb", "-o", "0.0.0.0" ]
       initContainers:
-      - image: cyberark/conjur-authn-k8s-client
+      - image: docker.io/cyberark/conjur-authn-k8s-client
         imagePullPolicy: IfNotPresent
         name: authenticator
         env:
