@@ -45,7 +45,7 @@ Overview:
     - Demo application `cityapp-summon` and `cityapp-secretless` identified by `system:serviceaccount:cityapp:cityapp-summon` and `system:serviceaccount:cityapp:cityapp-secretless`
       - Ref: [2. Define the application as a Conjur host in policy + 3.Grant access to secrets](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/cjr-k8s-authn-client-authjwt.htm#Setuptheapplicationtoretrievesecrets)
       - The demo applications are granted access to the JWT authenticator `conjur/authn-jwt/k8s` and demo database secrets `world_db` by adding them to `consumers` group of respective webservice and policy
-- ☝️ **Note**: `authn-jwt-k8s.yaml` builds on top of `app-vars.yaml` in https://joetanx.github.io/conjur-master. Loading `authn-jwt-k8s.yaml` without having `app-vars.yaml` loaded previously will not work.
+- ☝️ **Note**: `authn-jwt-k8s.yaml` builds on top of `app-vars.yaml` in <https://joetanx.github.io/conjur-master>. Loading `authn-jwt-k8s.yaml` without having `app-vars.yaml` loaded previously will not work.
 - Download and load the Conjur policy
 ```console
 curl -L -o authn-jwt-k8s.yaml https://github.com/joetanx/conjur-k8s-jwt/raw/main/authn-jwt-k8s.yaml
@@ -56,7 +56,7 @@ conjur policy load -f authn-jwt-k8s.yaml -b root
 rm -f authn-jwt-k8s.yaml
 ```
 
-## 3.2 Populate the variables required by the JWT Authenticator
+## 3.2. Populate the variables required by the JWT Authenticator
 - Ref: [3. Populate the policy variables](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-jwt-authn.htm#ConfiguretheJWTAuthenticator)
 ```console
 PUBLIC_KEYS="$(kubectl get --raw $(kubectl get --raw /.well-known/openid-configuration | jq -r '.jwks_uri'))"
@@ -68,7 +68,7 @@ conjur variable set -i conjur/authn-jwt/k8s/identity-path -v jwt-apps/k8s
 conjur variable set -i conjur/authn-jwt/k8s/audience -v vxlab
 ```
 
-## 3.3 Allowlist the JWT authenticator in Conjur
+## 3.3. Allowlist the JWT authenticator in Conjur
 - Ref: [4. Allowlist the JWT Authenticator in Conjur](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-jwt-authn.htm#ConfiguretheJWTAuthenticator)
 - Ref: [Step 1: Allowlist the authenticators](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Operations/Services/authentication-types.htm#Allowlis)
 ```console
@@ -80,7 +80,7 @@ podman exec conjur sv restart conjur
 curl -k https://conjur.vx/info
 ```
 
-## 3.4 Prepare the ConfigMaps
+## 3.4. Prepare the ConfigMaps
 - The Conjur master and follower information is passed to the follower and application pods using ConfigMaps
 - Prepare the namespace `conjur` and `cityapp`, and service account `authn-jwt-sa`
 ```console
@@ -128,7 +128,7 @@ kubectl -n cityapp create configmap conjur-connect-apps \
 --from-literal "CONJUR_SSL_CERTIFICATE=${CA_CERT}"
 ```
 
-## 3.5. Load hosts in CoreDNS
+## 3.5. Optional - Load hosts in CoreDNS
 - The `dap-seedfetcher` container uses `wget` to retrieve the seed file from Conjur Master.
 - Depending on network configurations, some dual stacked kubernetes may not be able to resolve static host entries in DNS properly, causing `wget: unable to resolve host address` error.
 - This is seen in my lab using Sophos Firewall with my Conjur Master FQDN configured as an IPv4 A record. The wget attempts to resolve for both A and AAAA; Sophos Firewall replies to AAAA with an NXDOMAIN response, causing wget to fail.
