@@ -203,7 +203,7 @@ cd .. && rm -rf cityapp
 - Notice that the MySQL credentials are hard-coded in `cityapp-hardcode.yaml`
 ```console
 curl -L -o cityapp-hardcode.yaml https://github.com/joetanx/conjur-k8s-jwt/raw/main/cityapp-hardcode.yaml
-kubectl apply -f cityapp-hardcode.yaml -n cityapp
+kubectl -n cityapp apply -f cityapp-hardcode.yaml
 ```
 - Clean-up
 ```console
@@ -211,7 +211,7 @@ rm -f cityapp-hardcode.yaml
 ```
 - Verify that the application is deployed successfully
 ```console
-kubectl get pods -o wide -n cityapp
+kubectl -n cityapp get pods -o wide
 ```
 - Browse to the Kubernetes node on port 30080 `http://<kube-node-fqdn>:30080` to verify that the application is working
 
@@ -245,7 +245,7 @@ rm -f *.yaml
 ```
 - Verify that the application is deployed successfully
 ```console
-kubectl get pods -o wide -n cityapp
+kubectl -n cityapp get pods -o wide
 ```
 - Browse to the Kubernetes node on port 30081 `http://<kube-node-fqdn>:30081` to verify that the application is working
   - Notice that the database connection details list the credentials retrieved from Conjur
@@ -284,7 +284,7 @@ rm -f *.yaml
 ```
 - Verify that the application is deployed successfully
 ```console
-kubectl get pods -o wide -n cityapp
+kubectl -n cityapp get pods -o wide
 ```
 - Browse to the Kubernetes node on port 30082 `http://<kube-node-fqdn>:30082` to verify that the application is working
   - Notice that the database connection details list that the application is connecting to `127.0.0.1` using empty credentials
