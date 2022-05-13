@@ -31,7 +31,7 @@ spec:
       serviceAccountName: authn-jwt-sa
       containers:
       - name: conjur-appliance
-        image: registry.tld/conjur-appliance:12.5.1
+        image: registry.tld/conjur-appliance:12.6.0
         command: ["/tmp/seedfile/start-follower.sh"]
         imagePullPolicy: IfNotPresent
         env:
