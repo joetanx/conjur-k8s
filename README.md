@@ -48,7 +48,7 @@ Overview:
 - ☝️ **Note**: `authn-jwt-k8s.yaml` builds on top of `app-vars.yaml` in <https://joetanx.github.io/conjur-master>. Loading `authn-jwt-k8s.yaml` without having `app-vars.yaml` loaded previously will not work.
 - Download and load the Conjur policy
 ```console
-curl -L -o authn-jwt-k8s.yaml https://github.com/joetanx/conjur-k8s-jwt/raw/main/authn-jwt-k8s.yaml
+curl -L -O https://github.com/joetanx/conjur-k8s-jwt/raw/main/authn-jwt-k8s.yaml
 conjur policy load -f authn-jwt-k8s.yaml -b root
 ```
 - Clean-up
@@ -84,7 +84,7 @@ curl -k https://conjur.vx/info
 - The Conjur master and follower information is passed to the follower and application pods using ConfigMaps
 - Prepare the namespace `conjur` and `cityapp`, and service account `authn-jwt-sa`
 ```console
-curl -L -o conjur-k8s-prep.yaml https://github.com/joetanx/conjur-k8s-jwt/raw/main/conjur-k8s-prep.yaml
+curl -L -O https://github.com/joetanx/conjur-k8s-jwt/raw/main/conjur-k8s-prep.yaml
 kubectl apply -f conjur-k8s-prep.yaml
 ```
 - Clean-up
@@ -176,7 +176,7 @@ kubectl rollout restart deploy coredns -n kube-system
   - Ref: [4. Set up the Follower service and deployment manifest](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-jwt-follower.htm)
 - Download the manifest file and deploy into the Kubernetes cluster
 ```console
-curl -L -o follower.yaml https://github.com/joetanx/conjur-k8s-jwt/raw/main/follower.yaml
+curl -L -O https://github.com/joetanx/conjur-k8s-jwt/raw/main/follower.yaml
 kubectl -n conjur apply -f follower.yaml
 ```
 - Clean-up
@@ -189,7 +189,7 @@ rm -f follower.yaml
 - Build cityapp container image
 ```console
 mkdir cityapp && cd $_
-curl -L -o cityapp.tgz https://github.com/joetanx/conjur-k8s-jwt/raw/main/cityapp.tgz
+curl -L -O https://github.com/joetanx/conjur-k8s-jwt/raw/main/cityapp.tgz
 tar xvf cityapp.tgz
 ./build.sh
 ```
@@ -230,13 +230,13 @@ kubectl -n cityapp get pods -o wide
 - We will map the `cityapp-summon-cm.yaml` to the `cityapp` container using a ConfigMap
 - ☝️ Both summon and authenticator container also need to locate Conjur to authenticate and retrieve credentials, this was done in the previous step where we loaded the `conjur-connect-apps` ConfigMap
 ```console
-curl -L -o cityapp-summon-cm.yaml https://github.com/joetanx/conjur-k8s-jwt/raw/main/cityapp-summon-cm.yaml
+curl -L -O https://github.com/joetanx/conjur-k8s-jwt/raw/main/cityapp-summon-cm.yaml
 kubectl -n cityapp create configmap cityapp-summon-cm --from-file=cityapp-summon-cm.yaml
 ```
 
 ## 6.3. Deploy the Summon-based cityapp
 ```console
-curl -L -o cityapp-summon.yaml https://github.com/joetanx/conjur-k8s-jwt/raw/main/cityapp-summon.yaml
+curl -L -O https://github.com/joetanx/conjur-k8s-jwt/raw/main/cityapp-summon.yaml
 kubectl -n cityapp apply -f cityapp-summon.yaml
 ```
 - Clean-up
@@ -269,13 +269,13 @@ kubectl -n cityapp get pods -o wide
 - We will map the `cityapp-secretless-cm.yaml` to the `cityapp` container using a ConfigMap
 - ☝️ Secretless Broker also need to locate Conjur to authenticate and retrieve credentials, this was done in the previous step where we loaded the `conjur-connect-apps` ConfigMap
 ```console
-curl -L -o cityapp-secretless-cm.yaml https://github.com/joetanx/conjur-k8s-jwt/raw/main/cityapp-secretless-cm.yaml
+curl -L -O https://github.com/joetanx/conjur-k8s-jwt/raw/main/cityapp-secretless-cm.yaml
 kubectl -n cityapp create configmap cityapp-secretless-cm --from-file=cityapp-secretless-cm.yaml
 ```
 
 ## 7.3. Deploy the Secretless-based cityapp
 ```console
-curl -L -o cityapp-secretless.yaml https://github.com/joetanx/conjur-k8s-jwt/raw/main/cityapp-secretless.yaml
+curl -L -O https://github.com/joetanx/conjur-k8s-jwt/raw/main/cityapp-secretless.yaml
 kubectl -n cityapp apply -f cityapp-secretless.yaml
 ```
 - Clean-up
