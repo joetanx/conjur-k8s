@@ -84,12 +84,7 @@ curl -k https://conjur.vx/info
 - The Conjur master and follower information is passed to the follower and application pods using ConfigMaps
 - Prepare the namespace `conjur` and `cityapp`, and service account `follower`
 ```console
-curl -L -O https://github.com/joetanx/conjur-k8s-jwt/raw/main/k8s-env-prep.yaml
-kubectl apply -f k8s-env-prep.yaml
-```
-- Clean-up
-```console
-rm -f k8s-env-prep.yaml
+kubectl apply -f https://github.com/joetanx/conjur-k8s-jwt/raw/main/k8s-env-prep.yaml
 ```
 - Prepare the necessary values as environments variables to be loaded into ConfigMaps
 ```console
@@ -174,14 +169,9 @@ kubectl rollout restart deploy coredns -n kube-system
 # 4. Deploy the follower
 - The `follower.yaml` manifest defines the necessary configurations to deploy the Conjur Follower into Kubernetes; review the file and read the ref link to understand how it works
   - Ref: [4. Set up the Follower service and deployment manifest](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-jwt-follower.htm)
-- Download the manifest file and deploy into the Kubernetes cluster
+- Deploy the manifest file into the Kubernetes cluster
 ```console
-curl -L -O https://github.com/joetanx/conjur-k8s-jwt/raw/main/follower.yaml
-kubectl -n conjur apply -f follower.yaml
-```
-- Clean-up
-```console
-rm -f follower.yaml
+kubectl -n conjur apply -f https://github.com/joetanx/conjur-k8s-jwt/raw/main/follower.yaml
 ```
 
 # 5. Preparing for cityapp deployment
@@ -202,12 +192,7 @@ cd .. && rm -rf cityapp
 - Verify that the cityapp container image works with a deployment with hard-coded secrets
 - Notice that the MySQL credentials are hard-coded in `cityapp-hardcode.yaml`
 ```console
-curl -L -o cityapp-hardcode.yaml https://github.com/joetanx/conjur-k8s-jwt/raw/main/cityapp-hardcode.yaml
-kubectl -n cityapp apply -f cityapp-hardcode.yaml
-```
-- Clean-up
-```console
-rm -f cityapp-hardcode.yaml
+kubectl -n cityapp apply -f https://github.com/joetanx/conjur-k8s-jwt/raw/main/cityapp-hardcode.yaml
 ```
 - Verify that the application is deployed successfully
 ```console
@@ -236,8 +221,7 @@ kubectl -n cityapp create configmap cityapp-summon-cm --from-file=cityapp-summon
 
 ## 6.3. Deploy the Summon-based cityapp
 ```console
-curl -L -O https://github.com/joetanx/conjur-k8s-jwt/raw/main/cityapp-summon.yaml
-kubectl -n cityapp apply -f cityapp-summon.yaml
+kubectl -n cityapp apply -f https://github.com/joetanx/conjur-k8s-jwt/raw/main/cityapp-summon.yaml
 ```
 - Clean-up
 ```console
@@ -275,8 +259,7 @@ kubectl -n cityapp create configmap cityapp-secretless-cm --from-file=cityapp-se
 
 ## 7.3. Deploy the Secretless-based cityapp
 ```console
-curl -L -O https://github.com/joetanx/conjur-k8s-jwt/raw/main/cityapp-secretless.yaml
-kubectl -n cityapp apply -f cityapp-secretless.yaml
+kubectl -n cityapp apply -f https://github.com/joetanx/conjur-k8s-jwt/raw/main/cityapp-secretless.yaml
 ```
 - Clean-up
 ```console
