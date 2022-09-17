@@ -12,5 +12,5 @@ metadata:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: authn-jwt-sa
+  name: follower
   namespace: conjur
