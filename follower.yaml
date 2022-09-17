@@ -76,7 +76,7 @@ spec:
             value: authn-jwt
         envFrom:
           - configMapRef:
-              name: conjur-connect-followers
+              name: follower-cm
         volumeMounts:
           - name: seedfile
             mountPath: /tmp/seedfile
