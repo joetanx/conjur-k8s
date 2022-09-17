@@ -218,14 +218,14 @@ kubectl -n cityapp get pods -o wide
 curl -L -O https://github.com/joetanx/conjur-k8s-jwt/raw/main/cityapp-summon-cm.yaml
 kubectl -n cityapp create configmap cityapp-summon-cm --from-file=cityapp-summon-cm.yaml
 ```
+- Clean-up
+```console
+rm -f cityapp-summon-cm.yaml
+```
 
 ## 6.3. Deploy the Summon-based cityapp
 ```console
 kubectl -n cityapp apply -f https://github.com/joetanx/conjur-k8s-jwt/raw/main/cityapp-summon.yaml
-```
-- Clean-up
-```console
-rm -f *.yaml
 ```
 - Verify that the application is deployed successfully
 ```console
@@ -256,14 +256,14 @@ kubectl -n cityapp get pods -o wide
 curl -L -O https://github.com/joetanx/conjur-k8s-jwt/raw/main/cityapp-secretless-cm.yaml
 kubectl -n cityapp create configmap cityapp-secretless-cm --from-file=cityapp-secretless-cm.yaml
 ```
+- Clean-up
+```console
+rm -f cityapp-secretless-cm.yaml
+```
 
 ## 7.3. Deploy the Secretless-based cityapp
 ```console
 kubectl -n cityapp apply -f https://github.com/joetanx/conjur-k8s-jwt/raw/main/cityapp-secretless.yaml
-```
-- Clean-up
-```console
-rm -f *.yaml
 ```
 - Verify that the application is deployed successfully
 ```console
