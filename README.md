@@ -213,7 +213,7 @@ kubectl -n cityapp get pods -o wide
 - Summon reads the identifiers for the secrets that an application needs from a yaml file
 - Ref: [Prepare applications to retrieve secrets](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/cjr-k8s-authn-client-authjwt.htm#Prepareapplicationstoretrievesecrets)
 - We will map the `cityapp-summon-cm.yaml` to the `cityapp` container using a ConfigMap
-- ☝️ Both summon and authenticator container also need to locate Conjur to authenticate and retrieve credentials, this was done in the previous step where we loaded the `conjur-connect-apps` ConfigMap
+- ☝️ Both summon and authenticator container also need to locate Conjur to authenticate and retrieve credentials, this was done in the previous step where we loaded the `apps-cm` ConfigMap
 ```console
 curl -L -O https://github.com/joetanx/conjur-k8s-jwt/raw/main/cityapp-summon-cm.yaml
 kubectl -n cityapp create configmap cityapp-summon-cm --from-file=cityapp-summon-cm.yaml
@@ -251,7 +251,7 @@ kubectl -n cityapp get pods -o wide
 - Secretless Broker needs some configuration to determine where to listen for new connection requests, where to route those connections, and where to get the credentials for each connection.
 - Ref: [Prepare the Secretless configuration](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-secretless-sidecar.htm#PreparetheSecretlessconfiguration)
 - We will map the `cityapp-secretless-cm.yaml` to the `cityapp` container using a ConfigMap
-- ☝️ Secretless Broker also need to locate Conjur to authenticate and retrieve credentials, this was done in the previous step where we loaded the `conjur-connect-apps` ConfigMap
+- ☝️ Secretless Broker also need to locate Conjur to authenticate and retrieve credentials, this was done in the previous step where we loaded the `apps-cm` ConfigMap
 ```console
 curl -L -O https://github.com/joetanx/conjur-k8s-jwt/raw/main/cityapp-secretless-cm.yaml
 kubectl -n cityapp create configmap cityapp-secretless-cm --from-file=cityapp-secretless-cm.yaml
