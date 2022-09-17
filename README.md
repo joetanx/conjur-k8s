@@ -5,9 +5,9 @@ Overview:
 - Deploy demonstration application `cityapp`: hard-code, summon, and secretless methods
 
 ### Software Versions
-- RHEL 8.5
-- Conjur Enterprise 12.6.0
-- Kubernetes 1.24
+- RHEL 9.0
+- Conjur Enterprise 12.7.0
+- Kubernetes 1.25
 
 ### Servers
 
@@ -39,7 +39,7 @@ Overview:
     - Creates `conjur/seed-generation` policy
     - Creates the `webservice` for the seed generation with `consumers` group allowed to authenticate to the webservice
   - Define `jwt-apps/k8s` policy with:
-    - Conjur Follower in Kubernetes identified by `system:serviceaccount:conjur:authn-jwt-sa`
+    - Conjur Follower in Kubernetes identified by `system:serviceaccount:conjur:follower`
       - Ref: [2. Define an identity in Conjur for the Conjur Follower](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-jwt-follower.htm)
       - The Conjur Follower is granted access to the JWT authenticator `conjur/authn-jwt/k8s` and seed generation `conjur/seed-generation` webservices by adding it into `consumers` group of respective webservices
     - Demo application `cityapp-summon` and `cityapp-secretless` identified by `system:serviceaccount:cityapp:cityapp-summon` and `system:serviceaccount:cityapp:cityapp-secretless`
@@ -82,14 +82,14 @@ curl -k https://conjur.vx/info
 
 ## 3.4. Prepare the ConfigMaps
 - The Conjur master and follower information is passed to the follower and application pods using ConfigMaps
-- Prepare the namespace `conjur` and `cityapp`, and service account `authn-jwt-sa`
+- Prepare the namespace `conjur` and `cityapp`, and service account `follower`
 ```console
-curl -L -O https://github.com/joetanx/conjur-k8s-jwt/raw/main/conjur-k8s-prep.yaml
-kubectl apply -f conjur-k8s-prep.yaml
+curl -L -O https://github.com/joetanx/conjur-k8s-jwt/raw/main/k8s-env-prep.yaml
+kubectl apply -f k8s-env-prep.yaml
 ```
 - Clean-up
 ```console
-rm -f conjur-k8s-prep.yaml
+rm -f k8s-env-prep.yaml
 ```
 - Prepare the necessary values as environments variables to be loaded into ConfigMaps
 ```console
