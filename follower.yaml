@@ -28,10 +28,10 @@ spec:
         name: follower
         role: follower
     spec:
-      serviceAccountName: authn-jwt-sa
+      serviceAccountName: follower
       containers:
       - name: conjur-appliance
-        image: registry.tld/conjur-appliance:12.6.0
+        image: localhost/conjur-appliance:12.7.0
         command: ["/tmp/seedfile/start-follower.sh"]
         imagePullPolicy: IfNotPresent
         env:
