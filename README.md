@@ -107,21 +107,21 @@ CONJUR_AUTHN_URL=$CONJUR_FOLLOWER_URL/authn-jwt/k8s
   - `conjur-authn-k8s-client` and `secretless-broker` containers need to verify the Conjur **follower** certificate
   - Since both the master and follower certificates in this demo are signed by the same CA `central.pem`, using the CA certificate will suffice
 
-- Create ConfigMap `conjur-connect-follower` for follower
+- Create ConfigMap `follower-cm` for follower
   - Ref: [3. Set up a ConfigMap](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-jwt-follower.htm)
 ```console
-kubectl -n conjur create configmap conjur-connect-followers \
+kubectl -n conjur create configmap follower-cm \
 --from-literal CONJUR_ACCOUNT=$CONJUR_ACCOUNT \
 --from-literal CONJUR_APPLIANCE_URL=$CONJUR_MASTER_URL \
 --from-literal CONJUR_SEED_FILE_URL=$CONJUR_SEED_FILE_URL \
 --from-literal AUTHENTICATOR_ID=$AUTHENTICATOR_ID \
 --from-literal "CONJUR_SSL_CERTIFICATE=${CA_CERT}"
 ```
-- Create ConfigMap `conjur-connect-apps` for applications
+- Create ConfigMap `apps-cm` for applications
   - Ref: [Prepare the application namespace, raw Kubernetes manifest](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-set-up-apps.htm#Preparetheapplicationnamespace)
   - Ref: [CyberArk raw manifest repository](https://github.com/cyberark/conjur-authn-k8s-client/blob/master/helm/conjur-config-namespace-prep/generated/conjur-config-namespace-prep.yaml)
 ```console
-kubectl -n cityapp create configmap conjur-connect-apps \
+kubectl -n cityapp create configmap apps-cm \
 --from-literal CONJUR_ACCOUNT=$CONJUR_ACCOUNT \
 --from-literal CONJUR_APPLIANCE_URL=$CONJUR_FOLLOWER_URL \
 --from-literal CONJUR_AUTHN_URL=$CONJUR_AUTHN_URL \
