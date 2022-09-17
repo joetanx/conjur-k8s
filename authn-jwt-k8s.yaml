@@ -59,10 +59,10 @@
   # Define an identity in Conjur for the Conjur Follower
   # Ref: https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-jwt-follower.htm
   - !host
-    id: system:serviceaccount:conjur:authn-jwt-sa
+    id: system:serviceaccount:conjur:follower
     annotations:
       authn-jwt/k8s/kubernetes.io/namespace: conjur
-      authn-jwt/k8s/kubernetes.io/serviceaccount/name: authn-jwt-sa
+      authn-jwt/k8s/kubernetes.io/serviceaccount/name: follower
   # Define the application as a Conjur host in policy
   # Ref: https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/cjr-k8s-authn-client-authjwt.htm
   - !host
@@ -88,7 +88,7 @@
   - !group conjur/authn-jwt/k8s/consumers
   - !group conjur/seed-generation/consumers
   members:
-  - !host jwt-apps/k8s/system:serviceaccount:conjur:authn-jwt-sa
+  - !host jwt-apps/k8s/system:serviceaccount:conjur:follower
 
 # Grant the host permissions to the JWT Authenticator and secrets
 - !grant
