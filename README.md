@@ -57,13 +57,7 @@ Overview:
 
 ```console
 curl -O https://raw.githubusercontent.com/joetanx/conjur-k8s/main/authn-jwt-k8s.yaml
-conjur policy load -f authn-jwt-k8s.yaml -b root
-```
-
-- Clean-up
-
-```console
-rm -f authn-jwt-k8s.yaml
+conjur policy load -f authn-jwt-k8s.yaml -b root && rm -f authn-jwt-k8s.yaml
 ```
 
 ## 3.2. Populate the variables required by the JWT Authenticator
@@ -84,10 +78,11 @@ conjur variable set -i conjur/authn-jwt/k8s/audience -v vxlab
 
 - Ref: [4. Allowlist the JWT Authenticator in Conjur](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-jwt-authn.htm#ConfiguretheJWTAuthenticator)
 - Ref: [Step 1: Allowlist the authenticators](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Operations/Services/authentication-types.htm#Allowlis)
+- ☝️ **Note**: This step requires that the `authenticators` section in `/etc/conjur/config/conjur.yml` to be configured (Ref: 2.5 <https://joetanx.github.io/conjur-master#25-allowlist-the-conjur-default-authenticator>)
 
 ```console
-podman exec conjur sed -i -e '$aCONJUR_AUTHENTICATORS="authn,authn-jwt/k8s"' /opt/conjur/etc/conjur.conf
-podman exec conjur sv restart conjur
+podman exec conjur sed -i -e '/authenticators:/a\  - authn-jwt/k8s' /etc/conjur/config/conjur.yml
+podman exec conjur evoke configuration apply
 ```
 
 - Verify that the Kubernetes authenticator is configured and allowlisted
@@ -260,13 +255,7 @@ kubectl -n cityapp get pods -o wide
 
 ```console
 curl -O https://raw.githubusercontent.com/joetanx/conjur-k8s/main/cityapp-summon-cm.yaml
-kubectl -n cityapp create configmap cityapp-summon-cm --from-file=cityapp-summon-cm.yaml
-```
-
-- Clean-up
-
-```console
-rm -f cityapp-summon-cm.yaml
+kubectl -n cityapp create configmap cityapp-summon-cm --from-file=cityapp-summon-cm.yaml && rm -f cityapp-summon-cm.yaml
 ```
 
 ## 6.3. Deploy the Summon-based cityapp
@@ -309,13 +298,7 @@ kubectl -n cityapp get pods -o wide
 
 ```console
 curl -O https://raw.githubusercontent.com/joetanx/conjur-k8s/main/cityapp-secretless-cm.yaml
-kubectl -n cityapp create configmap cityapp-secretless-cm --from-file=cityapp-secretless-cm.yaml
-```
-
-- Clean-up
-
-```console
-rm -f cityapp-secretless-cm.yaml
+kubectl -n cityapp create configmap cityapp-secretless-cm --from-file=cityapp-secretless-cm.yaml && rm -f cityapp-secretless-cm.yaml
 ```
 
 ## 7.3. Deploy the Secretless-based cityapp
