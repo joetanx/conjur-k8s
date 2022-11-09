@@ -66,10 +66,10 @@
   # Define the application as a Conjur host in policy
   # Ref: https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/cjr-k8s-authn-client-authjwt.htm
   - !host
-    id: system:serviceaccount:cityapp:cityapp-summon
+    id: system:serviceaccount:cityapp:cityapp-secretsprovider
     annotations:
       authn-jwt/k8s/kubernetes.io/namespace: cityapp
-      authn-jwt/k8s/kubernetes.io/serviceaccount/name: cityapp-summon
+      authn-jwt/k8s/kubernetes.io/serviceaccount/name: cityapp-secretsprovider
   - !host
     id: system:serviceaccount:cityapp:cityapp-secretless
     annotations:
@@ -79,7 +79,7 @@
   - !grant
     role: !layer cityapp
     members:
-    - !host system:serviceaccount:cityapp:cityapp-summon
+    - !host system:serviceaccount:cityapp:cityapp-secretsprovider
     - !host system:serviceaccount:cityapp:cityapp-secretless
 
 # Give the Conjur Follower permission to authenticate to Conjur and to use the seed service using the JWT Authenticator endpoint.
