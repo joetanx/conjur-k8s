@@ -37,20 +37,16 @@ spec:
     spec:
       serviceAccountName: cityapp-hardcode
       containers:
-      - image: localhost/cityapp:1.0
+      - image: localhost/cityapp:php
         imagePullPolicy: IfNotPresent
         name: cityapp
         env:
-          - name: DBAddress
-            value: "mysql.vx"
-          - name: DBName
-            value: "world"
-          - name: DBPort
-            value: "3306"
-          - name: DBUsername
-            value: "cityapp"
-          - name: DBPassword
-            value: "Cyberark1"
+          - name: DBADDR
+            value: mysql.vx
+          - name: DBUSER
+            value: cityapp
+          - name: DBPASS
+            value: Cyberark1
         ports:
         - containerPort: 80
           name: http
