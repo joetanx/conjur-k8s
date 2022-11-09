@@ -3,7 +3,7 @@
 Overview:
 - Construct the JWT authenticator for Kubernetes
 - Deploy Conjur follower in Kubernetes
-- Deploy demonstration application `cityapp`: hard-code, summon, and secretless methods
+- Deploy demonstration application `cityapp` in different modes: hard-code, secrets provider and secretless
 
 ### Software Versions
 
@@ -49,7 +49,7 @@ Overview:
     - Conjur Follower in Kubernetes identified by `system:serviceaccount:conjur:follower`
       - Ref: [2. Define an identity in Conjur for the Conjur Follower](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-jwt-follower.htm)
       - The Conjur Follower is granted access to the JWT authenticator `conjur/authn-jwt/k8s` and seed generation `conjur/seed-generation` webservices by adding it into `consumers` group of respective webservices
-    - Demo application `cityapp-summon` and `cityapp-secretless` identified by `system:serviceaccount:cityapp:cityapp-summon` and `system:serviceaccount:cityapp:cityapp-secretless`
+    - Demo application `cityapp-secretsprovider` and `cityapp-secretless` identified by `system:serviceaccount:cityapp:cityapp-secretsprovider` and `system:serviceaccount:cityapp:cityapp-secretless`
       - Ref: [2. Define the application as a Conjur host in policy + 3.Grant access to secrets](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/cjr-k8s-authn-client-authjwt.htm#Setuptheapplicationtoretrievesecrets)
       - The demo applications are granted access to the JWT authenticator `conjur/authn-jwt/k8s` and demo database secrets `world_db` by adding them to `consumers` group of respective webservice and policy
 - ☝️ **Note**: `authn-jwt-k8s.yaml` builds on top of `app-vars.yaml` in <https://joetanx.github.io/conjur-master>. Loading `authn-jwt-k8s.yaml` without having `app-vars.yaml` loaded previously will not work.
