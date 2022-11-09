@@ -81,19 +81,32 @@
         <div class="row py-lg-5">
           <div class="col-lg-12 col-md-12 mx-auto">
             <h1 class="fw-light">CyberArk Integration Demo</h1>
-            <h2 class="fw-light">&nbsp</h2>
+            <p class="lead">&nbsp</p>
             <h2 class="fw-light">Random World Cities!</h2>
             <h3 class="fw-light">
               <?php
                 echo '<b>'.$row['City'].'</b> is a city in <b>'.$row['District'].'</b>, <b>'.$row['Country'].'</b> with a population of <b>'.$row['Population'].'</b>';
               ?>
             </h3>
-            <p class="lead">
-              <?php
-                echo 'Connected to database <b>'.$data .'</b> on <b>'.$host.'</b>:<b>'.$port.'</b> using username: <b>'.$user.'</b> and password: <b>'.$pass.'</b>';
-              ?>
-            </p>
-            <h2 class="fw-light">&nbsp</h2>
+            <p class="lead">&nbsp</p>
+            <div class="bg-light p-3 rounded col-lg-5 col-md-5 mx-auto">
+              <p class="lead">
+                <?php
+                  echo 'Host: <b>'.getenv('HOSTNAME').'</b>';
+                ?>
+              </p>
+              <p class="lead">
+                <?php
+                  echo 'Connected to database <b>'.$data .'</b> on <b>'.$host.'</b>:<b>'.$port.'</b>';
+                ?>
+              </p>
+              <p class="lead">
+                <?php
+                  echo 'Using username: <b>'.$user.'</b> and password: <b>'.$pass.'</b>';
+                ?>
+              </p>
+            </div>
+            <p class="lead">&nbsp</p>
             <p>
               <a href="https://docs.cyberark.com" class="btn btn-primary my-2">CyberArk Docs</a>
               <a href="https://cyberark-customers.force.com/mplace/s/" class="btn btn-secondary my-2">CyberArk Marketplace</a>
