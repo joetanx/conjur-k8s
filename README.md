@@ -232,7 +232,7 @@ kubectl -n cityapp get pods -o wide
 
 - Ref: [Secrets Provider - Push-to-File mode](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/cjr-k8s-jwt-sp-ic-p2f.htm)
 
-![image](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Images/Integrations/k8s-ocp/cjr-sp-sidecar-p2f.png)
+![image](images/architectureCityappSecretsProvider.png)
 
 ```console
 kubectl -n cityapp apply -f https://raw.githubusercontent.com/joetanx/conjur-k8s/main/cityapp-secretsprovider.yaml
