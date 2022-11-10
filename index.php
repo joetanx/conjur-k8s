@@ -77,8 +77,8 @@
       </div>
     </header>
     <main>
-      <section class="py-5 text-center container">
-        <div class="row py-lg-5">
+      <section class="py-3 text-center container">
+        <div class="row py-lg-3">
           <div class="col-lg-12 col-md-12 mx-auto">
             <h1 class="fw-light">CyberArk Integration Demo</h1>
             <p class="lead">&nbsp</p>
@@ -115,7 +115,7 @@
         </div>
       </section>
     </main>
-    <footer class="text-muted py-5">
+    <footer class="text-muted py-3">
       <div class="container">
         <p class="float-end mb-1">
           <a href="#">Back to top</a>
