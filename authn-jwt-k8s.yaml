@@ -2,6 +2,7 @@
 # Ref: https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-jwt-authn.htm#ConfiguretheJWTAuthenticator
 - !policy
   id: conjur/authn-jwt/k8s
+  owner: !group conjur-admins
   body:
   - !webservice
 
@@ -39,6 +40,7 @@
 # Ref: https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-jwt-authn.htm
 - !policy
   id: conjur/seed-generation
+  owner: !group conjur-admins
   body:
   # This webservice represents the Seed service API
   - !webservice
@@ -53,8 +55,10 @@
     privilege: [ "execute" ]
     resource: !webservice
 
+- !group k8s-admins
 - !policy
   id: jwt-apps/k8s
+  owner: !group k8s-admins
   body:
   # Define an identity in Conjur for the Conjur Follower
   # Ref: https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-jwt-follower.htm
