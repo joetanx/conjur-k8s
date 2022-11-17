@@ -55,7 +55,9 @@
     privilege: [ "execute" ]
     resource: !webservice
 
-- !group k8s-admins
+- !group
+  id: k8s-admins
+  owner: !policy root
 - !policy
   id: jwt-apps/k8s
   owner: !group k8s-admins
