@@ -22,15 +22,15 @@ Overview:
 # 0. Kubernetes cluster
 
 - This demo should work with any flavour of Kubernetes clusters (On-prem, AKS, EKS), but was tested with a single-node on-prem Kubernetes cluster in my lab
-- For a guide to setup a single-node on-prem Kubernetes cluster: <https://joetanx.github.io/cri-o-kube>
+- For a guide to setup a single-node on-prem Kubernetes cluster: <https://github.com/joetanx/cri-o-kube>
 
 # 1. Setup MySQL database
 
-- Setup MySQL database according to this guide: <https://joetanx.github.io/mysql-world_db>
+- Setup MySQL database according to this guide: <https://github.com/joetanx/mysql-world_db>
 
 # 2. Setup Conjur master
 
-- Setup Conjur master according to this guide: <https://joetanx.github.io/conjur-master>
+- Setup Conjur master according to this guide: <https://github.com/joetanx/conjur-master>
 
 # 3. Preparing necessary configurations for the JWT authenticator
 
@@ -52,7 +52,7 @@ Overview:
     - Demo application `cityapp-secretsprovider` and `cityapp-secretless` identified by `system:serviceaccount:cityapp:cityapp-secretsprovider` and `system:serviceaccount:cityapp:cityapp-secretless`
       - Ref: [2. Define the application as a Conjur host in policy + 3.Grant access to secrets](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/cjr-k8s-authn-client-authjwt.htm#Setuptheapplicationtoretrievesecrets)
       - The demo applications are granted access to the JWT authenticator `conjur/authn-jwt/k8s` and demo database secrets `world_db` by adding them to `consumers` group of respective webservice and policy
-- ☝️ **Note**: `authn-jwt-k8s.yaml` builds on top of `app-vars.yaml` in <https://joetanx.github.io/conjur-master>. Loading `authn-jwt-k8s.yaml` without having `app-vars.yaml` loaded previously will not work.
+- ☝️ **Note**: `authn-jwt-k8s.yaml` builds on top of `app-vars.yaml` in <https://github.com/joetanx/conjur-master>. Loading `authn-jwt-k8s.yaml` without having `app-vars.yaml` loaded previously will not work.
 - Download and load the Conjur policy
 
 ```console
@@ -78,7 +78,7 @@ conjur variable set -i conjur/authn-jwt/k8s/audience -v vxlab
 
 - Ref: [4. Allowlist the JWT Authenticator in Conjur](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-jwt-authn.htm#ConfiguretheJWTAuthenticator)
 - Ref: [Step 1: Allowlist the authenticators](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Operations/Services/authentication-types.htm#Allowlis)
-- ☝️ **Note**: This step requires that the `authenticators` section in `/etc/conjur/config/conjur.yml` to be configured (Ref: 2.5 <https://joetanx.github.io/conjur-master#25-allowlist-the-conjur-default-authenticator>)
+- ☝️ **Note**: This step requires that the `authenticators` section in `/etc/conjur/config/conjur.yml` to be configured (Ref: 2.5 <https://github.com/joetanx/conjur-master#25-allowlist-the-conjur-default-authenticator>)
 
 ```console
 podman exec conjur sed -i -e '/authenticators:/a\  - authn-jwt/k8s' /etc/conjur/config/conjur.yml
