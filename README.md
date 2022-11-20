@@ -227,6 +227,23 @@ kubectl -n cityapp get pods -o wide
 ```
 
 - Browse to the Kubernetes node on port 30080 `http://<kube-node-fqdn>:30080` to verify that the application is working
+  - The cityapp connects to the MySQL world database to display random city information
+  - The database, username and password information is displayed for debugging, and the application is using the credentials hardcoded in the pod environment variables
+
+![image](images/pageCityappHardCoded.png)
+
+- Rotate the password on the MySQL server and update the new password in Conjur
+
+```console
+mysql -u root -e "ALTER USER 'cityapp'@'%' IDENTIFIED BY 'arFhw2UrHvbQ';"
+conjur variable set -i world_db/password -v arFhw2UrHvbQ
+```
+
+- Refresh the cityapp-hardcode page: the page will throw an authentication error, since the hard-coded credentials are no longer valid
+
+```console
+SQLSTATE[HY000] [1045] Access denied for user 'cityapp'@'10.244.0.6' (using password: YES)
+```
 
 # 7. Retrieving credentials using Secrets Provider for Kubernetes
 
@@ -246,6 +263,8 @@ kubectl -n cityapp get pods -o wide
 
 - Browse to the Kubernetes node on port 30081 `http://<kube-node-fqdn>:30081` to verify that the application is working
   - Notice that the database connection details list the credentials retrieved from Conjur
+
+![image](images/pageCityappSecretsProvider.png)
 
 # 8. Deploy cityapp-secretless
 
@@ -289,3 +308,5 @@ kubectl -n cityapp get pods -o wide
 
 - Browse to the Kubernetes node on port 30082 `http://<kube-node-fqdn>:30082` to verify that the application is working
   - Notice that the database connection details list that the application is connecting to `127.0.0.1` using empty credentials
+
+![image](images/pageCityappSecretless.png)
