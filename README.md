@@ -236,8 +236,8 @@ kubectl -n cityapp get pods -o wide
 
 | Target | Command |
 | --- | --- |
-| MySQL Server | `mysql -u root -e "ALTER USER 'cityapp'@'%' IDENTIFIED BY 'arFhw2UrHvbQ';"` |
-| Conjur | `conjur variable set -i world_db/password -v arFhw2UrHvbQ` |
+| MySQL Server | `mysql -u root -e "ALTER USER 'cityapp'@'%' IDENTIFIED BY 'qBIs3urqM0aG';"` |
+| Conjur | `conjur variable set -i world_db/password -v qBIs3urqM0aG` |
 
 - Refresh the cityapp-hardcode page: the page will throw an authentication error, since the hard-coded credentials are no longer valid
 
