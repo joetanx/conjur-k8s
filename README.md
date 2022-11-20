@@ -17,7 +17,7 @@ Overview:
 | --- | --- |
 | conjur.vx  | Conjur master  |
 | mysql.vx  | MySQL server  |
-| * (any)  | Single-node Kubernetes cluster  |
+| kube.vx  | Single-node Kubernetes cluster  |
 
 # 0. Kubernetes cluster
 
