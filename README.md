@@ -234,10 +234,10 @@ kubectl -n cityapp get pods -o wide
 
 - Rotate the password on the MySQL server and update the new password in Conjur
 
-```console
-mysql -u root -e "ALTER USER 'cityapp'@'%' IDENTIFIED BY 'arFhw2UrHvbQ';"
-conjur variable set -i world_db/password -v arFhw2UrHvbQ
-```
+| Target | Command |
+| --- | --- |
+| MySQL Server | `mysql -u root -e "ALTER USER 'cityapp'@'%' IDENTIFIED BY 'arFhw2UrHvbQ';"` |
+| Conjur | `conjur variable set -i world_db/password -v arFhw2UrHvbQ` |
 
 - Refresh the cityapp-hardcode page: the page will throw an authentication error, since the hard-coded credentials are no longer valid
 
