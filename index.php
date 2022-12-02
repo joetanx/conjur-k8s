@@ -97,7 +97,7 @@
               </p>
               <p class="lead">
                 <?php
-                  echo 'Connected to database <b>'.$data .'</b> on <b>'.$host.'</b>:<b>'.$port.'</b>';
+                  echo 'Connected to database <b>'.$data.'</b> on <b>'.$host.'</b>:<b>'.$port.'</b>';
                 ?>
               </p>
               <p class="lead">
