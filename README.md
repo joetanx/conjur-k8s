@@ -7,9 +7,9 @@ Overview:
 
 ### Software Versions
 
-- RHEL 9.0
-- Conjur Enterprise 12.7.0
-- Kubernetes 1.25
+- RHEL 9.1
+- Conjur Enterprise 12.9.0
+- Kubernetes 1.26
 
 ### Servers
 
