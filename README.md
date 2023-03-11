@@ -26,7 +26,7 @@ Overview:
 
 # 1. Setup MySQL database
 
-- Setup MySQL database according to this guide: <https://github.com/joetanx/mysql-world_db>
+- Setup MySQL database according to this guide: <https://github.com/joetanx/mysql-install>
 
 # 2. Setup Conjur master
 
@@ -51,7 +51,7 @@ Overview:
       - The Conjur Follower is granted access to the JWT authenticator `conjur/authn-jwt/k8s` and seed generation `conjur/seed-generation` webservices by adding it into `consumers` group of respective webservices
     - Demo application `cityapp-secretsprovider` and `cityapp-secretless` identified by `system:serviceaccount:cityapp:cityapp-secretsprovider` and `system:serviceaccount:cityapp:cityapp-secretless`
       - Ref: [2. Define the application as a Conjur host in policy + 3.Grant access to secrets](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/cjr-k8s-authn-client-authjwt.htm#Setuptheapplicationtoretrievesecrets)
-      - The demo applications are granted access to the JWT authenticator `conjur/authn-jwt/k8s` and demo database secrets `world_db` by adding them to `consumers` group of respective webservice and policy
+      - The demo applications are granted access to the JWT authenticator `conjur/authn-jwt/k8s` and demo database secrets `db_cityapp` by adding them to `consumers` group of respective webservice and policy
 - ☝️ **Note**: `authn-jwt-k8s.yaml` builds on top of `app-vars.yaml` in <https://github.com/joetanx/conjur-master>. Loading `authn-jwt-k8s.yaml` without having `app-vars.yaml` loaded previously will not work.
 - Download and load the Conjur policy
 
@@ -237,7 +237,7 @@ kubectl -n cityapp get pods -o wide
 | Target | Command |
 | --- | --- |
 | MySQL Server | `mysql -u root -e "ALTER USER 'cityapp'@'%' IDENTIFIED BY 'qBIs3urqM0aG';"` |
-| Conjur | `conjur variable set -i world_db/password -v qBIs3urqM0aG` |
+| Conjur | `conjur variable set -i db_cityapp/password -v qBIs3urqM0aG` |
 
 - Refresh the cityapp-hardcode page: the page will throw an authentication error, since the hard-coded credentials are no longer valid
 
