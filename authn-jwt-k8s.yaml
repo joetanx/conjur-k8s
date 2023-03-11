@@ -100,5 +100,5 @@
 - !grant
   roles:
   - !group conjur/authn-jwt/k8s/consumers
-  - !group world_db/consumers
+  - !group db_cityapp/consumers
   member: !layer jwt-apps/k8s/cityapp
