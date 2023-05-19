@@ -52,8 +52,12 @@ Overview:
     - Demo application `cityapp-secretsprovider` and `cityapp-secretless` identified by `system:serviceaccount:cityapp:cityapp-secretsprovider` and `system:serviceaccount:cityapp:cityapp-secretless`
       - Ref: [2. Define the application as a Conjur host in policy + 3.Grant access to secrets](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/cjr-k8s-authn-client-authjwt.htm#Setuptheapplicationtoretrievesecrets)
       - The demo applications are granted access to the JWT authenticator `conjur/authn-jwt/k8s` and demo database secrets `db_cityapp` by adding them to `consumers` group of respective webservice and policy
-- ☝️ **Note**: `authn-jwt-k8s.yaml` builds on top of `app-vars.yaml` in <https://github.com/joetanx/conjur-master>. Loading `authn-jwt-k8s.yaml` without having `app-vars.yaml` loaded previously will not work.
-- Download and load the Conjur policy
+
+> **Note**: `authn-jwt-k8s.yaml` builds on top of `app-vars.yaml` in <https://github.com/joetanx/conjur-master>
+> 
+> Loading `authn-jwt-k8s.yaml` without having `app-vars.yaml` loaded previously will not work
+
+Download and load the Conjur policy:
 
 ```console
 curl -O https://raw.githubusercontent.com/joetanx/conjur-k8s/main/authn-jwt-k8s.yaml
@@ -78,7 +82,10 @@ conjur variable set -i conjur/authn-jwt/k8s/audience -v vxlab
 
 - Ref: [4. Allowlist the JWT Authenticator in Conjur](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-jwt-authn.htm#ConfiguretheJWTAuthenticator)
 - Ref: [Step 1: Allowlist the authenticators](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Operations/Services/authentication-types.htm#Allowlis)
-- ☝️ **Note**: This step requires that the `authenticators` section in `/etc/conjur/config/conjur.yml` to be configured (Ref: 2.5 <https://github.com/joetanx/conjur-master#25-allowlist-the-conjur-default-authenticator>)
+
+> **Note**: This step requires that the `authenticators` section in `/etc/conjur/config/conjur.yml` to be configured
+> 
+> Ref: [2.5. Allowlist the Conjur default authenticator](https://github.com/joetanx/setup/blob/main/conjur.md#25-allowlist-the-conjur-default-authenticator)
 
 ```console
 podman exec conjur sed -i -e '/authenticators:/a\  - authn-jwt/k8s' /etc/conjur/config/conjur.yml
@@ -112,10 +119,10 @@ CONJUR_SEED_FILE_URL=$CONJUR_MASTER_URL/configuration/$CONJUR_ACCOUNT/seed/follo
 CONJUR_AUTHN_URL=$CONJUR_FOLLOWER_URL/authn-jwt/k8s
 ```
 
-- ☝️ **Note** on `CONJUR_SSL_CERTIFICATE`:
-  - `dap-seedfetcher` container needs to verify the Conjur **master** certificate
-  - `conjur-authn-k8s-client` and `secretless-broker` containers need to verify the Conjur **follower** certificate
-  - Since both the master and follower certificates in this demo are signed by the same CA `central.pem`, using the CA certificate will suffice
+> **Note** on `CONJUR_SSL_CERTIFICATE`:
+> - `dap-seedfetcher` container needs to verify the Conjur **master** certificate
+> - `conjur-authn-k8s-client` and `secretless-broker` containers need to verify the Conjur **follower** certificate
+> - Since both the master and follower certificates in this demo are signed by the same CA `central.pem`, using the CA certificate will suffice
 
 - Create ConfigMap `follower-cm` for follower
   - Ref: [3. Set up a ConfigMap](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-jwt-follower.htm)
