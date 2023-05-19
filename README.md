@@ -205,8 +205,8 @@ kubectl -n conjur apply -f https://raw.githubusercontent.com/joetanx/conjur-k8s/
 - Build cityapp container image
 
 ```console
-curl -O https://raw.githubusercontent.com/joetanx/conjur-k8s/main/Dockerfile
-curl -O https://raw.githubusercontent.com/joetanx/conjur-k8s/main/index.php
+curl -O https://raw.githubusercontent.com/joetanx/cityapp-php/main/Dockerfile
+curl -O https://raw.githubusercontent.com/joetanx/cityapp-php/main/index.php
 podman build -t cityapp:php .
 rm -rf Dockerfile index.php
 ```
