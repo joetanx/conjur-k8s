@@ -1,0 +1,52 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: hardcode
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hardcode
+  labels:
+    app: hardcode
+spec:
+  ports:
+  - port: 8080
+    nodePort: 30080
+    name: http
+  selector:
+    app: hardcode
+  type: NodePort
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: hardcode
+  name: hardcode
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hardcode
+  template:
+    metadata:
+      labels:
+        app: hardcode
+    spec:
+      serviceAccountName: hardcode
+      containers:
+      - image: docker.io/joetanx/cityapp:php
+        imagePullPolicy: IfNotPresent
+        name: cityapp
+        env:
+          - name: DBADDR
+            value: mysql.vx
+          - name: DBUSER
+            value: cityapp
+          - name: DBPASS
+            value: Cyberark1
+        ports:
+        - containerPort: 80
+          name: http
