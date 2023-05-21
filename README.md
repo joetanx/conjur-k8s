@@ -297,8 +297,8 @@ kubectl -n cityapp get pods -o wide
 - ☝️ Secretless Broker also need to locate Conjur to authenticate and retrieve credentials, this was done in the previous step where we loaded the `apps-cm` ConfigMap
 
 ```console
-curl -O https://raw.githubusercontent.com/joetanx/conjur-k8s/main/cityapp-secretless-cm.yaml
-kubectl -n cityapp create configmap cityapp-secretless-cm --from-file=cityapp-secretless-cm.yaml && rm -f cityapp-secretless-cm.yaml
+curl -O https://raw.githubusercontent.com/joetanx/conjur-k8s/main/secretless-cm.yaml
+kubectl -n cityapp create configmap secretless-cm --from-file=secretless-cm.yaml && rm -f secretless-cm.yaml
 ```
 
 ## 8.3. Deploy the Secretless-based cityapp
