@@ -22,31 +22,26 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  labels:
-    app: hardcode
   name: hardcode
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: hardcode
+      deployment: hardcode
   template:
     metadata:
       labels:
-        app: hardcode
+        deployment: hardcode
     spec:
       serviceAccountName: hardcode
       containers:
-      - image: docker.io/joetanx/cityapp:php
+      - name: cityapp
+        image: docker.io/joetanx/cityapp:php
         imagePullPolicy: IfNotPresent
-        name: cityapp
         env:
-          - name: DBADDR
-            value: mysql.vx
-          - name: DBUSER
-            value: cityapp
-          - name: DBPASS
-            value: Cyberark1
-        ports:
-        - containerPort: 80
-          name: http
+        - name: DBADDR
+          value: mysql.vx
+        - name: DBPASS
+          value: Cyberark1
+        - name: DBUSER
+          value: cityapp
