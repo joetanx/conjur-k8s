@@ -257,7 +257,7 @@ Browse to the Kubernetes node on port 30080 `http://<kube-node-fqdn>:30080` to v
 - The cityapp connects to the MySQL world database to display random city information
 - The database, username and password information is displayed for debugging, and the application is using the credentials hardcoded in the pod environment variables
 
-![image](images/pageCityappHardCoded.png)
+![image](https://github.com/joetanx/conjur-k8s/assets/90442032/6e053aab-c571-4e16-9156-b2436ca1d25e)
 
 Rotate the password on the MySQL server and update the new password in Conjur:
 
@@ -292,7 +292,7 @@ Browse to the Kubernetes node on port 30081 `http://<kube-node-fqdn>:30081` to v
 
 Notice that the database connection details list the credentials retrieved from Conjur:
 
-![image](images/pageCityappSecretsProvider.png)
+![image](https://github.com/joetanx/conjur-k8s/assets/90442032/7f9ac05b-a05e-4466-a998-d6dd4ba99967)
 
 ## 7. Deploy cityapp-secretless
 
@@ -343,4 +343,4 @@ Browse to the Kubernetes node on port 30082 `http://<kube-node-fqdn>:30082` to v
 
 - Notice that the database connection details list that the application is connecting to `127.0.0.1` using empty credentials
 
-![image](images/pageCityappSecretless.png)
+![image](https://github.com/joetanx/conjur-k8s/assets/90442032/7a435644-d7e4-41bd-8017-ea58b91959e4)
