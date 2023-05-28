@@ -111,12 +111,11 @@ curl -k https://conjur.vx/info
 
 The Conjur master and follower information is passed to the follower and application pods using ConfigMaps
 
-#### 2.4.1. Prepare the environment in Kubernetes
-
-Prepare the namespace `conjur` and `cityapp`, and service account `follower`:
+#### 2.4.1. Create namespaces
 
 ```console
-kubectl apply -f https://raw.githubusercontent.com/joetanx/conjur-k8s/main/k8s-env-prep.yaml
+kubectl create namespace conjur
+kubectl create namespace cityapp
 ```
 
 #### 2.4.2. Prepare the necessary values as environments variables to be loaded into ConfigMaps:
@@ -243,6 +242,10 @@ rm -rf Dockerfile index.php
 
 ## 5. Deploy cityapp-hardcode
 
+> **Note** The provided manifest exposes the deployment through NGINX ingress controller at host `hardcode.cityapp.vx`
+> 
+> Edit the service and ingress according to the environment before applying
+
 ```console
 kubectl -n cityapp apply -f https://raw.githubusercontent.com/joetanx/conjur-k8s/main/cityapp-hardcode.yaml
 ```
@@ -253,7 +256,7 @@ Verify that the application is deployed successfully:
 kubectl -n cityapp get pods -o wide
 ```
 
-Browse to the Kubernetes node on port 30080 `http://<kube-node-fqdn>:30080` to verify that the application is working
+Browse to the service to verify that the application is working
 - The cityapp connects to the MySQL world database to display random city information
 - The database, username and password information is displayed for debugging, and the application is using the credentials hardcoded in the pod environment variables
 
@@ -278,6 +281,10 @@ Ref: [Secrets Provider - Push-to-File mode](https://docs.cyberark.com/Product-Do
 
 ![image](images/architectureCityappSecretsProvider.png)
 
+> **Note** The provided manifest exposes the deployment through NGINX ingress controller at host `secretsprovider.cityapp.vx`
+> 
+> Edit the service and ingress according to the environment before applying
+
 ```console
 kubectl -n cityapp apply -f https://raw.githubusercontent.com/joetanx/conjur-k8s/main/cityapp-secretsprovider.yaml
 ```
@@ -288,9 +295,9 @@ Verify that the application is deployed successfully:
 kubectl -n cityapp get pods -o wide
 ```
 
-Browse to the Kubernetes node on port 30081 `http://<kube-node-fqdn>:30081` to verify that the application is working
+Browse to the service to verify that the application is working
 
-Notice that the database connection details list the credentials retrieved from Conjur:
+- Notice that the database connection details list the credentials retrieved from Conjur:
 
 ![image](https://github.com/joetanx/conjur-k8s/assets/90442032/7f9ac05b-a05e-4466-a998-d6dd4ba99967)
 
@@ -329,6 +336,10 @@ kubectl -n cityapp create configmap secretless-cm --from-file=secretless-cm.yaml
 
 ### 7.3. Deploy the Secretless-based cityapp
 
+> **Note** The provided manifest exposes the deployment through NGINX ingress controller at host `secretless.cityapp.vx`
+> 
+> Edit the service and ingress according to the environment before applying
+
 ```console
 kubectl -n cityapp apply -f https://raw.githubusercontent.com/joetanx/conjur-k8s/main/cityapp-secretless.yaml
 ```
@@ -339,7 +350,7 @@ Verify that the application is deployed successfully:
 kubectl -n cityapp get pods -o wide
 ```
 
-Browse to the Kubernetes node on port 30082 `http://<kube-node-fqdn>:30082` to verify that the application is working
+Browse to the service to verify that the application is working
 
 - Notice that the database connection details list that the application is connecting to `127.0.0.1` using empty credentials
 
