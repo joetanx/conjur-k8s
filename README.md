@@ -68,8 +68,8 @@ The policy `authn-jwt-k8s.yaml` performs the following:
 Download and load the Conjur policy:
 
 ```console
-curl -O https://raw.githubusercontent.com/joetanx/conjur-k8s/main/authn-jwt-k8s.yaml
-conjur policy load -f authn-jwt-k8s.yaml -b root && rm -f authn-jwt-k8s.yaml
+curl -sLO https://github.com/joetanx/conjur-k8s/raw/main/authn-jwt-k8s.yaml
+conjur policy load -f authn-jwt-k8s.yaml -b root
 ```
 
 ### 2.2. Populate the variables required by the JWT Authenticator
@@ -121,7 +121,7 @@ kubectl create namespace cityapp
 #### 2.4.2. Prepare the necessary values as environments variables to be loaded into ConfigMaps:
 
 ```console
-CA_CERT="$(curl https://raw.githubusercontent.com/joetanx/conjur-k8s/main/central.pem)"
+CA_CERT="$(curl -sL https://github.com/joetanx/conjur-k8s/raw/main/central.pem)"
 CONJUR_MASTER_URL=https://conjur.vx
 CONJUR_FOLLOWER_URL=https://follower.conjur.svc.cluster.local
 AUTHENTICATOR_ID=k8s
@@ -220,7 +220,7 @@ Ref: [4. Set up the Follower service and deployment manifest](https://docs.cyber
 Deploy the manifest file into the Kubernetes cluster:
 
 ```console
-kubectl -n conjur apply -f https://raw.githubusercontent.com/joetanx/conjur-k8s/main/follower.yaml
+kubectl -n conjur apply -f https://github.com/joetanx/conjur-k8s/raw/main/follower.yaml
 ```
 
 ## 4. Preparing for cityapp deployment
@@ -234,8 +234,8 @@ The deployment manifest files in this repo is configured use `docker.io/joetanx/
 To build the container image from [source](https://github.com/joetanx/cityapp-php)
 
 ```console
-curl -O https://raw.githubusercontent.com/joetanx/cityapp-php/main/Dockerfile
-curl -O https://raw.githubusercontent.com/joetanx/cityapp-php/main/index.php
+curl -sLO https://github.com/joetanx/cityapp-php/raw/main/Dockerfile
+curl -sLO https://github.com/joetanx/cityapp-php/raw/main/index.php
 podman build -t cityapp:php .
 rm -rf Dockerfile index.php
 ```
@@ -247,7 +247,7 @@ rm -rf Dockerfile index.php
 > Edit the service and ingress according to the environment before applying
 
 ```console
-kubectl -n cityapp apply -f https://raw.githubusercontent.com/joetanx/conjur-k8s/main/cityapp-hardcode.yaml
+kubectl -n cityapp apply -f https://github.com/joetanx/conjur-k8s/raw/main/cityapp-hardcode.yaml
 ```
 
 Verify that the application is deployed successfully:
@@ -286,7 +286,7 @@ Ref: [Secrets Provider - Push-to-File mode](https://docs.cyberark.com/Product-Do
 > Edit the service and ingress according to the environment before applying
 
 ```console
-kubectl -n cityapp apply -f https://raw.githubusercontent.com/joetanx/conjur-k8s/main/cityapp-secretsprovider.yaml
+kubectl -n cityapp apply -f https://github.com/joetanx/conjur-k8s/raw/main/cityapp-secretsprovider.yaml
 ```
 
 Verify that the application is deployed successfully:
@@ -330,8 +330,8 @@ We will map the `cityapp-secretless-cm.yaml` to the `cityapp` container using a 
 ☝️ Secretless Broker also need to locate Conjur to authenticate and retrieve credentials, this was done in the previous step where we loaded the `apps-cm` ConfigMap
 
 ```console
-curl -O https://raw.githubusercontent.com/joetanx/conjur-k8s/main/secretless-cm.yaml
-kubectl -n cityapp create configmap secretless-cm --from-file=secretless-cm.yaml && rm -f secretless-cm.yaml
+curl -sLO https://github.com/joetanx/conjur-k8s/raw/main/secretless-cm.yaml
+kubectl -n cityapp create configmap secretless-cm --from-file=secretless-cm.yaml
 ```
 
 ### 7.3. Deploy the Secretless-based cityapp
@@ -341,7 +341,7 @@ kubectl -n cityapp create configmap secretless-cm --from-file=secretless-cm.yaml
 > Edit the service and ingress according to the environment before applying
 
 ```console
-kubectl -n cityapp apply -f https://raw.githubusercontent.com/joetanx/conjur-k8s/main/cityapp-secretless.yaml
+kubectl -n cityapp apply -f https://github.com/joetanx/conjur-k8s/raw/main/cityapp-secretless.yaml
 ```
 
 Verify that the application is deployed successfully:
