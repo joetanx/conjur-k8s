@@ -220,7 +220,7 @@ Ref: [4. Set up the Follower service and deployment manifest](https://docs.cyber
 Deploy the manifest file into the Kubernetes cluster:
 
 ```console
-kubectl -n conjur apply -f https://github.com/joetanx/conjur-k8s/raw/main/follower.yaml
+kubectl apply -f https://github.com/joetanx/conjur-k8s/raw/main/follower.yaml
 ```
 
 ## 4. Preparing for cityapp deployment
@@ -247,7 +247,7 @@ rm -rf Dockerfile index.php
 > Edit the service and ingress according to the environment before applying
 
 ```console
-kubectl -n cityapp apply -f https://github.com/joetanx/conjur-k8s/raw/main/cityapp-hardcode.yaml
+kubectl apply -f https://github.com/joetanx/conjur-k8s/raw/main/cityapp-hardcode.yaml
 ```
 
 Verify that the application is deployed successfully:
@@ -286,7 +286,7 @@ Ref: [Secrets Provider - Push-to-File mode](https://docs.cyberark.com/Product-Do
 > Edit the service and ingress according to the environment before applying
 
 ```console
-kubectl -n cityapp apply -f https://github.com/joetanx/conjur-k8s/raw/main/cityapp-secretsprovider.yaml
+kubectl apply -f https://github.com/joetanx/conjur-k8s/raw/main/cityapp-secretsprovider.yaml
 ```
 
 Verify that the application is deployed successfully:
@@ -341,7 +341,7 @@ kubectl -n cityapp create configmap secretless-cm --from-file=secretless-cm.yaml
 > Edit the service and ingress according to the environment before applying
 
 ```console
-kubectl -n cityapp apply -f https://github.com/joetanx/conjur-k8s/raw/main/cityapp-secretless.yaml
+kubectl apply -f https://github.com/joetanx/conjur-k8s/raw/main/cityapp-secretless.yaml
 ```
 
 Verify that the application is deployed successfully:
