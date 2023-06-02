@@ -171,7 +171,7 @@ kubectl -n cityapp create configmap apps-cm \
 - We can ensure resolution of our Conjur Master FQDN by loading it into the Kubernetes CoreDNS. Ref: <https://coredns.io/plugins/hosts/>
 
 ```console
-kubectl edit cm coredns -n kube-system
+kubectl -n kube-system edit cm coredns
 ```
 
 Add the hosts portion into the Corefile section:
