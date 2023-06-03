@@ -4,6 +4,7 @@ metadata:
   name: hardcode
   namespace: cityapp
 spec:
+  clusterIP: None
   selector:
     app: hardcode
   ports:
