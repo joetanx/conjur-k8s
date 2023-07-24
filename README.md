@@ -1,17 +1,67 @@
 ## Integrate Kubernetes with Conjur Enterprise using the JWT authenticator
 
-Overview:
-- Construct the JWT authenticator for Kubernetes
-- Deploy Conjur follower in Kubernetes
-- Deploy demonstration application `cityapp` in different modes: hard-code, secrets provider and secretless
+### Overview
 
-### Software Versions
+![image](https://github.com/joetanx/conjur-k8s/assets/90442032/4a1212df-57eb-476a-9442-15d05149563e)
+
+Conjur uses the JWKS of the Kubernetes cluster API as a trust anchor for JWT authentication
+
+Sample JWKS:
+
+```json
+{
+  "keys": [
+    {
+      "use": "sig",
+      "kty": "RSA",
+      "kid": "Rd9a5iQ8EXCM_EXxAZN7PHKfh71rTUWx0Tcu-xhF8WQ",
+      "alg": "RS256",
+      "n": "zQw5uipPtvN7c3BFjUcYSxNfB6XVDIB2WuRCTZd4ufNQHBWzw05Dcl_bpYgBpA_CgiNXZlEsrGbnBX9GO2gV0ftdzwUwJBYzLJv_4ZtxBr9C-aZYeQ-n5MCbQ2y-YDDuET9bLaYQscKwUmr0_mR50WwRZfPuZ_f7tPLSUL8C-U0SHt17UYNp6bgAhhEBnLQIgGFrES5H5AALAhm3mhe-ahYI8NMMzj0V2D7PLT_TG-5P3fkzmNXpzU2TK4vkTVaODdK_SFNZn-ZiUrlnOPKtlkQEE-C-prD--0L7mfVGWap3jdL6JM0KjlMdOK8A257SzlkFEFdnjZ1MtUpmwJ5L1w",
+      "e": "AQAB"
+    }
+  ]
+}
+```
+
+Pods of a Deployment are associated with a ServiceAccount and are issued JWTs via [downward API](https://kubernetes.io/docs/concepts/workloads/pods/downward-api/)
+
+Sample JWT:
+
+```json
+{
+  "aud": [
+    "vxlab"
+  ],
+  "exp": 1686271891,
+  "iat": 1686265891,
+  "iss": "https://kubernetes.default.svc.cluster.local",
+  "kubernetes.io": {
+    "namespace": "cityapp",
+    "pod": {
+      "name": "secretsprovider-864dbb9b6c-9k2rf",
+      "uid": "cfcd9126-802a-4609-a5d1-9e5cff8c4a65"
+    },
+    "serviceaccount": {
+      "name": "secretsprovider",
+      "uid": "efa1eeb2-8afd-4614-8aa7-67fc9a7b7384"
+    }
+  },
+  "nbf": 1686265891,
+  "sub": "system:serviceaccount:cityapp:secretsprovider"
+}
+```
+
+Conjur can verify the validity of the JWT against the JWKS and its associated claims against the configured host annotations
+
+### Lab details
+
+#### Software Versions
 
 - RHEL 9.2
 - Conjur Enterprise 13.0
 - Kubernetes 1.27
 
-### Servers
+#### Servers
 
 | Hostname  | Role |
 | --- | --- |
