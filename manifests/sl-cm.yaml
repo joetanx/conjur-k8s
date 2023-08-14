@@ -1,0 +1,15 @@
+version: "2"
+services:
+  mysql_tcp:
+    connector: mysql
+    listenOn: tcp://0.0.0.0:3306
+    credentials:
+      host:
+        from: conjur
+        get: db_cityapp/address
+      username:
+        from: conjur
+        get: db_cityapp/username
+      password:
+        from: conjur
+        get: db_cityapp/password

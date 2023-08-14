@@ -1,0 +1,56 @@
+# Define the JWT Authenticator endpoint in Conjur
+# Ref: https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-jwt-authn.htm#ConfiguretheJWTAuthenticator
+- !policy
+  id: conjur/authn-jwt/k8s
+  owner: !group conjur-admins
+  body:
+  - !webservice
+
+  # Uncomment one of following variables depending on the public availability
+  # of the Service Account Issuer Discovery service in Kubernetes 
+  # If the service is publicly available, uncomment 'jwks-uri'.
+  # If the service is not available, uncomment 'public-keys'
+  # - !variable jwks-uri
+  - !variable public-keys
+
+  - !variable issuer
+  - !variable token-app-property
+  - !variable identity-path
+  - !variable audience
+
+  # Group of applications that can authenticate using this JWT Authenticator
+  - !group consumers
+
+  - !permit
+    role: !group consumers
+    privilege: [read,authenticate]
+    resource: !webservice
+
+  - !webservice status
+
+  # Group of users who can check the status of the JWT Authenticator
+  - !group operators
+
+  - !permit
+    role: !group operators
+    privilege: [read]
+    resource: !webservice status
+
+# Enable the seed generation service
+# Ref: https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Deployment/cnj-seedservice.htm
+- !policy
+  id: conjur/seed-generation
+  owner: !group conjur-admins
+  body:
+  # This webservice represents the Seed service API
+  - !webservice
+
+  # Hosts that can generate seeds become members of the
+  # `consumers` group.
+  - !group consumers
+
+  # Authorize `consumers` to request seeds
+  - !permit
+    role: !group consumers
+    privilege: [execute]
+    resource: !webservice

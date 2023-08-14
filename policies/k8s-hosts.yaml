@@ -1,0 +1,56 @@
+- !group
+  id: k8s-admins
+  owner: !policy root
+- !policy
+  id: jwt-apps/k8s
+  owner: !group k8s-admins
+  body:
+  - !layer cityapp
+  - &k8s-hosts
+    # Define an identity in Conjur for the Conjur Follower
+    # Ref: https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-conjfollower.htm
+    - !host
+      id: system:serviceaccount:conjur:follower
+      annotations:
+        authn-jwt/k8s/kubernetes.io/namespace: conjur
+        authn-jwt/k8s/kubernetes.io/serviceaccount/name: follower
+    # Define the application as a Conjur host in policy
+    # Ref: https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/cjr-k8s-authn-client-authjwt.htm
+    - !host
+      id: system:serviceaccount:app-cje:p2f
+      annotations:
+        authn-jwt/k8s/kubernetes.io/namespace: app-cje
+        authn-jwt/k8s/kubernetes.io/serviceaccount/name: p2f
+    - !host
+      id: system:serviceaccount:app-cje:p2s-env
+      annotations:
+        authn-jwt/k8s/kubernetes.io/namespace: app-cje
+        authn-jwt/k8s/kubernetes.io/serviceaccount/name: p2s-env
+    - !host
+      id: system:serviceaccount:app-cje:p2s-vol
+      annotations:
+        authn-jwt/k8s/kubernetes.io/namespace: app-cje
+        authn-jwt/k8s/kubernetes.io/serviceaccount/name: p2s-vol
+    - !host
+      id: system:serviceaccount:app-cje:sl
+      annotations:
+        authn-jwt/k8s/kubernetes.io/namespace: app-cje
+        authn-jwt/k8s/kubernetes.io/serviceaccount/name: sl
+  - !grant
+    role: !layer cityapp
+    members: *k8s-hosts
+
+# Give the Conjur Follower permission to authenticate to Conjur and to use the seed service using the JWT Authenticator endpoint.
+- !grant
+  roles:
+  - !group conjur/authn-jwt/k8s/consumers
+  - !group conjur/seed-generation/consumers
+  members:
+  - !host jwt-apps/k8s/system:serviceaccount:conjur:follower
+
+# Grant the host permissions to the JWT Authenticator and secrets
+- !grant
+  roles:
+  - !group conjur/authn-jwt/k8s/consumers
+  - !group db_cityapp/consumers
+  member: !layer jwt-apps/k8s/cityapp

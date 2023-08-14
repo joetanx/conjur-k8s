@@ -1,0 +1,121 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: p2f
+  namespace: app-cje
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: p2f
+  namespace: app-cje
+spec:
+  clusterIP: None
+  selector:
+    app: p2f
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: p2f
+  namespace: app-cje
+  annotations:
+    cert-manager.io/cluster-issuer: ca-issuer
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: p2f.cje.cityapp.vx
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: p2f
+            port:
+              number: 8080
+  tls:
+  - hosts:
+    - p2f.cje.cityapp.vx
+    secretName: p2f-cert
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: p2f
+  namespace: app-cje
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: p2f
+  template:
+    metadata:
+      labels:
+        app: p2f
+      annotations:
+        # https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/cjr-k8s-secrets-provider-ref.htm
+        conjur.org/container-mode: sidecar
+        conjur.org/secrets-destination: file
+        conjur.org/jwt-token-path: /var/run/secrets/tokens/jwt
+        conjur.org/conjur-secrets.p2f: |
+          - dbaddr: db_cityapp/address
+          - dbuser: db_cityapp/username
+          - dbpass: db_cityapp/password
+        conjur.org/secret-file-path.p2f: ./worlddb.json
+        conjur.org/secret-file-format.p2f: json
+        conjur.org/secrets-refresh-interval: 10s
+    spec:
+      serviceAccountName: p2f
+      containers:
+      - name: cityapp
+        image: docker.io/joetanx/cityapp:php
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+        - name: conjur-secrets
+          mountPath: /conjur
+          readOnly: true
+      - name: secretsprovider
+        image: docker.io/cyberark/secrets-provider-for-k8s:latest
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+        - name: podinfo
+          mountPath: /conjur/podinfo
+        - name: conjur-secrets
+          mountPath: /conjur/secrets
+        - name: jwt-token
+          mountPath: /var/run/secrets/tokens
+        env:
+        # https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/cjr-k8s-secrets-provider-ref.htm
+        - name: MY_POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: MY_POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        envFrom:
+        - configMapRef:
+            name: apps-cm
+      volumes:
+      - name: podinfo
+        downwardAPI:
+          items:
+          - path: annotations
+            fieldRef:
+              fieldPath: metadata.annotations
+      - name: conjur-secrets
+        emptyDir:
+          medium: Memory
+      - name: jwt-token
+        projected:
+          sources:
+          - serviceAccountToken:
+              path: jwt
+              expirationSeconds: 6000
+              audience: https://conjur.vx/
