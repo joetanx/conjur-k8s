@@ -330,7 +330,7 @@ rm -rf Dockerfile index.php
 
 ### 6.2. Deploy cityapp-hardcode
 
-> [!Note!]
+> [!Note]
 > 
 > The provided manifest exposes the deployment through [NGINX ingress controller](https://github.com/kubernetes/ingress-nginx/) with certificate signed by [cert-manager](https://cert-manager.io/) at host `hc.cityapp.vx`
 > 
@@ -374,7 +374,7 @@ Ref: [Secrets Provider - Push-to-File mode](https://docs.cyberark.com/AAM-DAP/La
 
 ![p2f](https://github.com/joetanx/conjur-k8s/assets/90442032/6a8c564b-5e5f-43c6-9b1c-15d7585d43a5)
 
-> [!Note!]
+> [!Note]
 > 
 > The provided manifest exposes the deployment through [NGINX ingress controller](https://github.com/kubernetes/ingress-nginx/) with certificate signed by [cert-manager](https://cert-manager.io/) at host `p2f.cje.cityapp.vx`
 > 
@@ -404,7 +404,7 @@ Ref [Secrets Provider - Kubernetes Secrets mode](https://docs.cyberark.com/AAM-D
 
 ![p2s-env](https://github.com/joetanx/conjur-k8s/assets/90442032/8577e1a7-7e1f-416e-8e35-180c7f5b97fb)
 
-> [!Note!]
+> [!Note]
 > 
 > The provided manifest exposes the deployment through [NGINX ingress controller](https://github.com/kubernetes/ingress-nginx/) with certificate signed by [cert-manager](https://cert-manager.io/) at host `p2s-env.cje.cityapp.vx`
 > 
@@ -430,7 +430,7 @@ Browse to the service to verify that the application is working
 
 ![p2s-vol](https://github.com/joetanx/conjur-k8s/assets/90442032/f26dca90-2b93-4529-bf31-23ce820ec055)
 
-> [!Note!]
+> [!Note]
 > 
 > The provided manifest exposes the deployment through [NGINX ingress controller](https://github.com/kubernetes/ingress-nginx/) with certificate signed by [cert-manager](https://cert-manager.io/) at host `p2s-vol.cje.cityapp.vx`
 > 
@@ -527,7 +527,7 @@ kubectl -n app-cje create configmap sl-cm --from-file=sl-cm.yaml && rm -f sl-cm.
 
 ### 8.3. Deploy the Secretless-based cityapp
 
-> [!Note!]
+> [!Note]
 > 
 > The provided manifest exposes the deployment through [NGINX ingress controller](https://github.com/kubernetes/ingress-nginx/) with certificate signed by [cert-manager](https://cert-manager.io/) at host `sl.cje.cityapp.vx`
 > 
