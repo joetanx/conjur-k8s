@@ -4,6 +4,7 @@
 
 The Kubernetes cluster API implements an OpenID Connect authentication (OIDC) endpoint at `https://<cluster-url>/.well-known/openid-configuration`
 - Service accounts are issued with ServiceAccount tokens, which are in JSON Web Token (JWT) format
+- Pods of Deployments can be associated with a ServiceAccount and are issued JWTs via [downward API](https://kubernetes.io/docs/concepts/workloads/pods/downward-api/)
   - Example JWT:
     ```json
     {
@@ -48,7 +49,9 @@ The Kubernetes cluster API implements an OpenID Connect authentication (OIDC) en
 
 Ref: https://kubernetes.io/docs/reference/access-authn-authz/authentication/
 
-Conjur uses the Kubernetes OIDC authentication endpoint as an Identity Provider (IdP) to authenticate workloads.
+Conjur leverages on the Kubernetes OIDC authentication endpoint as an Identity Provider (IdP) to authenticate workloads
+- Validity of the JWTs can be verified against the JWKS
+- Claims in the JWTs can be verified against configured host annotations for authorization checks
 
 ![overview](https://github.com/joetanx/conjur-k8s/assets/90442032/75398653-810c-44f1-b5b9-e82e8cc0b965)
 
@@ -68,99 +71,42 @@ Conjur uses the Kubernetes OIDC authentication endpoint as an Identity Provider 
 
 ![p2s-vol](https://github.com/joetanx/conjur-k8s/assets/90442032/f26dca90-2b93-4529-bf31-23ce820ec055)
 
-# ⚠ WORK IN PROGRESS ⚠
+## 2. Setting up the integration
 
-# ⚠ THE CONTENT BELOW ARE IN PROCESS OF BEING UPDATED ⚠
-
-## Integrate Kubernetes with Conjur Enterprise using the JWT authenticator
-
-### Overview
-
-![image](https://github.com/joetanx/conjur-k8s/assets/90442032/4a1212df-57eb-476a-9442-15d05149563e)
-
-Conjur uses the JWKS of the Kubernetes cluster API as a trust anchor for JWT authentication
-
-Sample JWKS:
-
-```json
-{
-  "keys": [
-    {
-      "use": "sig",
-      "kty": "RSA",
-      "kid": "Rd9a5iQ8EXCM_EXxAZN7PHKfh71rTUWx0Tcu-xhF8WQ",
-      "alg": "RS256",
-      "n": "zQw5uipPtvN7c3BFjUcYSxNfB6XVDIB2WuRCTZd4ufNQHBWzw05Dcl_bpYgBpA_CgiNXZlEsrGbnBX9GO2gV0ftdzwUwJBYzLJv_4ZtxBr9C-aZYeQ-n5MCbQ2y-YDDuET9bLaYQscKwUmr0_mR50WwRZfPuZ_f7tPLSUL8C-U0SHt17UYNp6bgAhhEBnLQIgGFrES5H5AALAhm3mhe-ahYI8NMMzj0V2D7PLT_TG-5P3fkzmNXpzU2TK4vkTVaODdK_SFNZn-ZiUrlnOPKtlkQEE-C-prD--0L7mfVGWap3jdL6JM0KjlMdOK8A257SzlkFEFdnjZ1MtUpmwJ5L1w",
-      "e": "AQAB"
-    }
-  ]
-}
-```
-
-Pods of a Deployment are associated with a ServiceAccount and are issued JWTs via [downward API](https://kubernetes.io/docs/concepts/workloads/pods/downward-api/)
-
-Sample JWT:
-
-```json
-{
-  "aud": [
-    "vxlab"
-  ],
-  "exp": 1686271891,
-  "iat": 1686265891,
-  "iss": "https://kubernetes.default.svc.cluster.local",
-  "kubernetes.io": {
-    "namespace": "cityapp",
-    "pod": {
-      "name": "secretsprovider-864dbb9b6c-9k2rf",
-      "uid": "cfcd9126-802a-4609-a5d1-9e5cff8c4a65"
-    },
-    "serviceaccount": {
-      "name": "secretsprovider",
-      "uid": "efa1eeb2-8afd-4614-8aa7-67fc9a7b7384"
-    }
-  },
-  "nbf": 1686265891,
-  "sub": "system:serviceaccount:cityapp:secretsprovider"
-}
-```
-
-Conjur can verify the validity of the JWT against the JWKS and its associated claims against the configured host annotations
-
-### Lab details
+### 2.1. Lab details
 
 #### Software Versions
 
 - RHEL 9.2
 - Conjur Enterprise 13.0
-- Kubernetes 1.27
+- Kubernetes 1.28
 
 #### Servers
 
-| Hostname  | Role |
-| --- | --- |
-| conjur.vx  | Conjur master  |
-| mysql.vx  | MySQL server  |
-| kube.vx  | Single-node Kubernetes cluster  |
+|Hostname|Role|
+|---|---|
+|conjur.vx|Conjur master|
+|mysql.vx|MySQL server|
+|kube.vx|Single-node Kubernetes cluster|
 
-## 1. Setup
-
-### 1.1. Kubernetes cluster
+### 2.2. Kubernetes cluster
 
 - This demo should work with any flavour of Kubernetes clusters (On-prem, AKS, EKS), but was tested with a single-node on-prem Kubernetes cluster in my lab
 - For a guide to setup a single-node on-prem Kubernetes cluster: <https://github.com/joetanx/setup/blob/main/cri-o-kube.md>
 
-### 1.2. Setup MySQL database
+### 2.3. Setup MySQL database
 
 - Setup MySQL database according to this guide: <https://github.com/joetanx/setup/blob/main/mysql.md>
 
-### 1.3. Setup Conjur master
+### 2.4. Setup Conjur master
 
 - Setup Conjur master according to this guide: <https://github.com/joetanx/setup/blob/main/conjur.md>
 
-## 2. Preparing necessary configurations for the JWT authenticator
+## 3. Preparing Conjur configurations
 
 ### 2.1. Configure and enable JWT authenticator
+
+There are 2 Conjur policies provider in the [`policies`](./policies) directory of this repository: `authn-jwt-k8s.yaml` and `k8s-hosts.yaml`
 
 The policy `authn-jwt-k8s.yaml` performs the following:
 
@@ -176,7 +122,9 @@ The policy `authn-jwt-k8s.yaml` performs the following:
 - Creates `conjur/seed-generation` policy
 - Creates the `webservice` for the seed generation with `consumers` group allowed to authenticate to the webservice
 
-3. Define `jwt-apps/k8s` policy with:
+The policy `/k8s-hosts.yaml` performs the following:
+
+1. Define `jwt-apps/k8s` policy with:
 
 - Conjur Follower in Kubernetes identified by `system:serviceaccount:conjur:follower`
   - Ref: [2. Define an identity in Conjur for the Conjur Follower](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-conjfollower.htm)
@@ -185,9 +133,11 @@ The policy `authn-jwt-k8s.yaml` performs the following:
   - Ref: [2. Define the application as a Conjur host in policy + 3.Grant access to secrets](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/cjr-k8s-authn-client-authjwt.htm#Setuptheapplicationtoretrievesecrets)
   - The demo applications are granted access to the JWT authenticator `conjur/authn-jwt/k8s` and demo database secrets `db_cityapp` by adding them to `consumers` group of respective webservice and policy
 
-> **Note**: `authn-jwt-k8s.yaml` builds on top of `app-vars.yaml` in <https://github.com/joetanx/conjur-master>
+> [!Note]
 > 
-> Loading `authn-jwt-k8s.yaml` without having `app-vars.yaml` loaded previously will not work
+> `k8s-hosts.yaml` builds on top of `app-vars.yaml` in <https://github.com/joetanx/setup/blob/main/conjur.md>
+> 
+> Loading `k8s-hosts.yaml` without having `app-vars.yaml` loaded previously will not work
 
 Download and load the Conjur policy:
 
@@ -230,6 +180,8 @@ Verify that the Kubernetes authenticator is configured and allowlisted:
 ```console
 curl -k https://conjur.vx/info
 ```
+
+## 4. Preparing Kubernetes configurations
 
 ### 2.4. Prepare the ConfigMaps
 
@@ -334,6 +286,13 @@ Restart the CoreDNS deployment:
 ```console
 kubectl rollout restart deploy coredns -n kube-system
 ```
+
+# ⚠ WORK IN PROGRESS ⚠
+
+# ⚠ THE CONTENT BELOW ARE IN PROCESS OF BEING UPDATED ⚠
+
+## 2. Preparing necessary configurations for the JWT authenticator
+
 
 ## 3. Deploy the follower
 
