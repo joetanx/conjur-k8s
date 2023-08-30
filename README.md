@@ -492,7 +492,7 @@ However, updates to the files in the volume mount is dependent on the Kubernetes
 - As a result, the total delay from the moment when the Secret is updated to the moment when new keys are projected to the Pod can be as long as the kubelet sync period + cache propagation delay, where the cache propagation delay depends on the chosen cache type (following the same order listed in the previous paragraph, these are: watch propagation delay, the configured cache TTL, or zero for direct polling).
 - Ref: https://kubernetes.io/docs/concepts/configuration/secret/#using-secrets-as-files-from-a-pod
 
-## 8. ARCHIVED: Deploy cityapp-secretless
+<details><summary><h2>8. ARCHIVED: Deploy cityapp-secretless</h2></summary>
 
 ### 8.1. Avoiding secrets from ever touching your application - Secretless Broker
 
@@ -548,3 +548,5 @@ Browse to the service to verify that the application is working
 - Notice that the database connection details list that the application is connecting to `127.0.0.1` using empty credentials
 
 ![image](https://github.com/joetanx/conjur-k8s/assets/90442032/7ff29a0f-f7da-4cb0-8abb-9dec1c8e55a5)
+
+</details>
