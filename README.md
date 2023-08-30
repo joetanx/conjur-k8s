@@ -498,7 +498,7 @@ However, updates to the files in the volume mount is dependent on the Kubernetes
 
 The [Secretless Broker](https://docs.cyberark.com/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-secretless-sidecar.htm) enables applications to connect securely to services without ever having to fetch secrets
 
-In the provided `[sl.yaml](./manifests/sl.yaml)` manifest, the `secretless broker` runs as a sidecar container alongside with the `cityapp` container
+In the provided [`sl.yaml`](./manifests/sl.yaml) manifest, the `secretless broker` runs as a sidecar container alongside with the `cityapp` container
 
 The Secretless Broker will:
 - Authenticate to Conjur
