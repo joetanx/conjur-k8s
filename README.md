@@ -181,7 +181,9 @@ Ref:
 - [4. Enable the JWT Authenticator in Conjur](https://docs.cyberark.com/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-jwt-authn.htm#ConfiguretheJWTAuthenticator)
 - [Step 2: Allowlist the authenticators](https://docs.cyberark.com/AAM-DAP/Latest/en/Content/Operations/Services/authentication-types.htm#Allowlis)
 
-> [!Note]: This step requires that the `authenticators` section in `/etc/conjur/config/conjur.yml` to be configured
+> [!Note]
+> 
+> This step requires that the `authenticators` section in `/etc/conjur/config/conjur.yml` to be configured
 > 
 > Ref: [2.5. Allowlist the Conjur default authenticator](https://github.com/joetanx/setup/blob/main/conjur.md#25-allowlist-the-conjur-default-authenticator)
 
@@ -220,7 +222,9 @@ CONJUR_SEED_FILE_URL=$CONJUR_MASTER_URL/configuration/$CONJUR_ACCOUNT/seed/follo
 CONJUR_AUTHN_URL=$CONJUR_FOLLOWER_URL/authn-jwt/k8s
 ```
 
-> [!Note] on `CONJUR_SSL_CERTIFICATE`:
+> [!Note]
+> 
+> On `CONJUR_SSL_CERTIFICATE`:
 > 
 > - `dap-seedfetcher` container needs to verify the Conjur **master** certificate
 > - 
