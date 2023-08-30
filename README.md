@@ -1,3 +1,77 @@
+## 1. Overview
+
+### 1.1. How does Kubernetes integration with Conjur using JWT work?
+
+The Kubernetes cluster API implements an OpenID Connect authentication (OIDC) endpoint at `https://<cluster-url>/.well-known/openid-configuration`
+- Service accounts are issued with ServiceAccount tokens, which are in JSON Web Token (JWT) format
+  - Example JWT:
+    ```json
+    {
+      "aud": [
+        "https://conjur.vx/"
+      ],
+      "exp": 1693376769,
+      "iat": 1693370769,
+      "iss": "https://kubernetes.default.svc.cluster.local",
+      "kubernetes.io": {
+        "namespace": "app-cje",
+        "pod": {
+          "name": "p2f-68db995878-7hg8n",
+          "uid": "861be607-ff6f-4bb6-850b-42b842e44a33"
+        },
+        "serviceaccount": {
+          "name": "p2f",
+          "uid": "ddb1ca36-0231-4ecc-81b8-25fd0d11a087"
+        }
+      },
+      "nbf": 1693370769,
+      "sub": "system:serviceaccount:app-cje:p2f"
+    }
+    ```
+- The public keys of the JSON Web Key Set (JWKS) on the authentication endpoint can be used to validate the tokens
+  - The public keys of the JWKS can be retrieve by running: `kubectl get --raw $(kubectl get --raw /.well-known/openid-configuration | jq -r '.jwks_uri')`
+  - Example JWKS:
+    ```json
+    {
+      "keys":[
+        {
+          "use":"sig",
+          "kty":"RSA",
+          "kid":"qgR3hxR6c9ortKnfd96TK8FfasK-L77vRoPtVz1z91o",
+          "alg":"RS256",
+          "n":"462bF75dDmlqY-PaVRTVpMkIQwIEakzt1MfKGXqbCGJRNYDbY4KRbn0aO5FcFv2-zgROmYVs5QJluCCUwrZ0odCX3GzhgdupRBENOnCI8E7_-Xg4AqT6uhjoV5tQWm0yJGxOw4WfXtAImkI0-RufQMRPPbJMVHyPBE_fSXCevaeoPo3QX_zniFcQiPBQpu9ONDLgGfS3zO7rc-Of8XXozpKGNImUxrUKFOtZADtpAgdzd392SNXItxuBzov8UavcwcvJdvGlKN0G_WIiBOzS88w5EvoOYMtDH8c_LeCB0qG6EPgNpPhIdicgfmj2aLkT25ALoXK1z3B7f13zMP5nHw",
+          "e":"AQAB"
+        }
+      ]
+    }
+    ```
+
+Ref: https://kubernetes.io/docs/reference/access-authn-authz/authentication/
+
+Conjur uses the Kubernetes OIDC authentication endpoint as an Identity Provider (IdP) to authenticate workloads.
+
+![overview](https://github.com/joetanx/conjur-k8s/assets/90442032/75398653-810c-44f1-b5b9-e82e8cc0b965)
+
+### 1.2. Retrieving secrets from Conjur with [secrets provider for k8s](https://github.com/cyberark/secrets-provider-for-k8s)
+
+### Push to file (p2f)
+
+![p2f](https://github.com/joetanx/conjur-k8s/assets/90442032/6a8c564b-5e5f-43c6-9b1c-15d7585d43a5)
+
+### Push to Kubernetes secrets (p2s)
+
+#### Environment variables mode
+
+![p2s-env](https://github.com/joetanx/conjur-k8s/assets/90442032/8577e1a7-7e1f-416e-8e35-180c7f5b97fb)
+
+#### Volume mount mode
+
+![p2s-vol](https://github.com/joetanx/conjur-k8s/assets/90442032/f26dca90-2b93-4529-bf31-23ce820ec055)
+
+# ⚠ WORK IN PROGRESS ⚠
+
+# ⚠ THE CONTENT BELOW ARE IN PROCESS OF BEING UPDATED ⚠
+
 ## Integrate Kubernetes with Conjur Enterprise using the JWT authenticator
 
 ### Overview
