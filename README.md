@@ -104,11 +104,11 @@ Conjur leverages on the Kubernetes OIDC authentication endpoint as an Identity P
 
 ## 3. Preparing Conjur configurations
 
-### 2.1. Configure and enable JWT authenticator
-
 There are 2 Conjur policies provider in the [`policies`](./policies) directory of this repository: `authn-jwt-k8s.yaml` and `k8s-hosts.yaml`
 
-The policy `authn-jwt-k8s.yaml` performs the following:
+### 3.1. JWT authenticator policy
+
+The policy [`authn-jwt-k8s.yaml`](./policies/authn-jwt-k8s.yaml) performs the following:
 
 1. Define the JWT authenticator endpoint in Conjur
 
@@ -122,16 +122,29 @@ The policy `authn-jwt-k8s.yaml` performs the following:
 - Creates `conjur/seed-generation` policy
 - Creates the `webservice` for the seed generation with `consumers` group allowed to authenticate to the webservice
 
-The policy `/k8s-hosts.yaml` performs the following:
+### 3.2. Host identity policy
+
+The policy [`k8s-hosts.yaml`](./policies/k8s-hosts.yaml) performs the following:
 
 1. Define `jwt-apps/k8s` policy with:
 
-- Conjur Follower in Kubernetes identified by `system:serviceaccount:conjur:follower`
-  - Ref: [2. Define an identity in Conjur for the Conjur Follower](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-conjfollower.htm)
-  - The Conjur Follower is granted access to the JWT authenticator `conjur/authn-jwt/k8s` and seed generation `conjur/seed-generation` webservices by adding it into `consumers` group of respective webservices
-- Demo application `cityapp-secretsprovider` and `cityapp-secretless` identified by `system:serviceaccount:cityapp:cityapp-secretsprovider` and `system:serviceaccount:cityapp:cityapp-secretless`
-  - Ref: [2. Define the application as a Conjur host in policy + 3.Grant access to secrets](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/cjr-k8s-authn-client-authjwt.htm#Setuptheapplicationtoretrievesecrets)
-  - The demo applications are granted access to the JWT authenticator `conjur/authn-jwt/k8s` and demo database secrets `db_cityapp` by adding them to `consumers` group of respective webservice and policy
+- Host identities for:
+  - Conjur Follower in Kubernetes identified by `system:serviceaccount:conjur:follower`
+    - Ref: [2. Define an identity in Conjur for the Conjur Follower](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-conjfollower.htm)
+  - Demo applications
+    |Host identity|Service account|
+    |---|---|
+    |`p2f`|`system:serviceaccount:app-cje:p2f`|
+    |`p2s-env`|`system:serviceaccount:app-cje:p2s-env`|
+    |`p2s-vol`|`system:serviceaccount:app-cje:p2s-vol`|
+    |`sl`|`system:serviceaccount:app-cje:sl`|
+    - Ref: [2. Define the application as a Conjur host in policy + 3.Grant access to secrets](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/cjr-k8s-authn-client-authjwt.htm#Setuptheapplicationtoretrievesecrets)
+
+2. The follower and demo applications are granted access the following permissions by adding them to the respective `consumers` group:
+    |Host identity|Authorization|
+    |---|---|
+    |Follower|• Allowed to authenticate to `auth-jwt/k8s`<br>• Allowed to request seed|
+    |Demo applications|• Allowed to authenticate to `auth-jwt/k8s`<br>• Allowed to retrieve secrets from `db_cityapp`|
 
 > [!Note]
 > 
@@ -142,13 +155,15 @@ The policy `/k8s-hosts.yaml` performs the following:
 Download and load the Conjur policy:
 
 ```console
-curl -sLO https://github.com/joetanx/conjur-k8s/raw/main/authn-jwt-k8s.yaml
-conjur policy load -f authn-jwt-k8s.yaml -b root
+curl -sLO https://github.com/joetanx/conjur-k8s/raw/main/policies/authn-jwt-k8s.yaml
+curl -sLO https://github.com/joetanx/conjur-k8s/raw/main/policies/k8s-hosts.yaml
+conjur policy load -b root -f authn-jwt-k8s.yaml
+conjur policy load -b root -f k8s-hosts.yaml
 ```
 
-### 2.2. Populate the variables required by the JWT Authenticator
+### 3.3. Populate the variables required by the JWT Authenticator
 
-Ref: [3. Populate the policy variables](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-jwt-authn.htm#ConfiguretheJWTAuthenticator)
+Ref: [3. Populate the policy variables](https://docs.cyberark.com/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-jwt-authn.htm#ConfiguretheJWTAuthenticator)
 
 ```console
 PUBLIC_KEYS="$(kubectl get --raw $(kubectl get --raw /.well-known/openid-configuration | jq -r '.jwks_uri'))"
@@ -160,13 +175,13 @@ conjur variable set -i conjur/authn-jwt/k8s/identity-path -v jwt-apps/k8s
 conjur variable set -i conjur/authn-jwt/k8s/audience -v vxlab
 ```
 
-### 2.3. Allowlist the JWT authenticator in Conjur
+### 3.4. Allowlist the JWT authenticator in Conjur
 
 Ref:
-- [4. Allowlist the JWT Authenticator in Conjur](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-jwt-authn.htm#ConfiguretheJWTAuthenticator)
-- [Step 1: Allowlist the authenticators](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Operations/Services/authentication-types.htm#Allowlis)
+- [4. Enable the JWT Authenticator in Conjur](https://docs.cyberark.com/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-jwt-authn.htm#ConfiguretheJWTAuthenticator)
+- [Step 2: Allowlist the authenticators](https://docs.cyberark.com/AAM-DAP/Latest/en/Content/Operations/Services/authentication-types.htm#Allowlis)
 
-> **Note**: This step requires that the `authenticators` section in `/etc/conjur/config/conjur.yml` to be configured
+> [!Note]: This step requires that the `authenticators` section in `/etc/conjur/config/conjur.yml` to be configured
 > 
 > Ref: [2.5. Allowlist the Conjur default authenticator](https://github.com/joetanx/setup/blob/main/conjur.md#25-allowlist-the-conjur-default-authenticator)
 
@@ -183,18 +198,17 @@ curl -k https://conjur.vx/info
 
 ## 4. Preparing Kubernetes configurations
 
-### 2.4. Prepare the ConfigMaps
-
 The Conjur master and follower information is passed to the follower and application pods using ConfigMaps
 
-#### 2.4.1. Create namespaces
+### 4.1. Create namespaces
 
 ```console
 kubectl create namespace conjur
-kubectl create namespace cityapp
+kubectl create namespace app-hc
+kubectl create namespace app-cje
 ```
 
-#### 2.4.2. Prepare the necessary values as environments variables to be loaded into ConfigMaps:
+### 4.2. Prepare the necessary values as environments variables to be loaded into ConfigMaps:
 
 ```console
 CA_CERT="$(curl -sL https://github.com/joetanx/conjur-k8s/raw/main/central.pem)"
@@ -206,12 +220,15 @@ CONJUR_SEED_FILE_URL=$CONJUR_MASTER_URL/configuration/$CONJUR_ACCOUNT/seed/follo
 CONJUR_AUTHN_URL=$CONJUR_FOLLOWER_URL/authn-jwt/k8s
 ```
 
-> **Note** on `CONJUR_SSL_CERTIFICATE`:
+> [!Note] on `CONJUR_SSL_CERTIFICATE`:
+> 
 > - `dap-seedfetcher` container needs to verify the Conjur **master** certificate
+> - 
 > - `conjur-authn-k8s-client` and `secretless-broker` containers need to verify the Conjur **follower** certificate
+> - 
 > - Since both the master and follower certificates in this demo are signed by the same CA `central.pem`, using the CA certificate will suffice
 
-#### 2.4.3. Create ConfigMap `follower-cm` for follower
+### 4.3. Create ConfigMap `follower-cm` for follower
 
 Ref: [3. Set up a ConfigMap](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-conjfollower.htm):
 
@@ -224,7 +241,7 @@ kubectl -n conjur create configmap follower-cm \
 --from-literal "CONJUR_SSL_CERTIFICATE=${CA_CERT}"
 ```
 
-#### 2.4.4. Create ConfigMap `apps-cm` for applications
+### 4.4. Create ConfigMap `apps-cm` for applications
 
 Ref:
 - [Prepare the Kubernetes cluster and Golden ConfigMap](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-jwt-set-up-apps.htm#PreparetheKubernetesclusterandGoldenConfigMap)
@@ -238,7 +255,7 @@ kubectl -n cityapp create configmap apps-cm \
 --from-literal "CONJUR_SSL_CERTIFICATE=${CA_CERT}"
 ```
 
-### 2.5. Optional - add static host entries in CoreDNS
+### 4.5. Optional - add static host entries in CoreDNS
 
 - The `dap-seedfetcher` container uses `wget` to retrieve the seed file from Conjur Master.
 - Depending on network configurations, some dual stacked kubernetes may not be able to resolve static host entries in DNS properly, causing `wget: unable to resolve host address` error.
@@ -290,9 +307,6 @@ kubectl rollout restart deploy coredns -n kube-system
 # ⚠ WORK IN PROGRESS ⚠
 
 # ⚠ THE CONTENT BELOW ARE IN PROCESS OF BEING UPDATED ⚠
-
-## 2. Preparing necessary configurations for the JWT authenticator
-
 
 ## 3. Deploy the follower
 
