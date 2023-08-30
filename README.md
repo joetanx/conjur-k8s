@@ -55,22 +55,6 @@ Conjur leverages on the Kubernetes OIDC authentication endpoint as an Identity P
 
 ![overview](https://github.com/joetanx/conjur-k8s/assets/90442032/75398653-810c-44f1-b5b9-e82e8cc0b965)
 
-### 1.2. Retrieving secrets from Conjur with [secrets provider for k8s](https://github.com/cyberark/secrets-provider-for-k8s)
-
-### Push to file (p2f)
-
-![p2f](https://github.com/joetanx/conjur-k8s/assets/90442032/6a8c564b-5e5f-43c6-9b1c-15d7585d43a5)
-
-### Push to Kubernetes secrets (p2s)
-
-#### Environment variables mode
-
-![p2s-env](https://github.com/joetanx/conjur-k8s/assets/90442032/8577e1a7-7e1f-416e-8e35-180c7f5b97fb)
-
-#### Volume mount mode
-
-![p2s-vol](https://github.com/joetanx/conjur-k8s/assets/90442032/f26dca90-2b93-4529-bf31-23ce820ec055)
-
 ## 2. Setting up the integration
 
 ### 2.1. Lab details
@@ -344,35 +328,16 @@ rm -rf Dockerfile index.php
 
 </details>
 
-# ⚠ WORK IN PROGRESS ⚠
+### 6.2. Deploy cityapp-hardcode
 
-# ⚠ THE CONTENT BELOW ARE IN PROCESS OF BEING UPDATED ⚠
-
-## 4. Preparing for cityapp deployment
-
-The cityapp application is used to demostrate the various scenarios: hard-coded, secrets-provider, and secretless methods to consume the secrets
-
-The deployment manifest files in this repo is configured use `docker.io/joetanx/cityapp:php`
-
-### 4.1. Optional - build cityapp container image
-
-To build the container image from [source](https://github.com/joetanx/cityapp-php)
-
-```console
-curl -sLO https://github.com/joetanx/cityapp-php/raw/main/Dockerfile
-curl -sLO https://github.com/joetanx/cityapp-php/raw/main/index.php
-podman build -t cityapp:php .
-rm -rf Dockerfile index.php
-```
-
-## 5. Deploy cityapp-hardcode
-
-> **Note** The provided manifest exposes the deployment through NGINX ingress controller at host `hardcode.cityapp.vx`
+> [!Note!]
+> 
+> The provided manifest exposes the deployment through [NGINX ingress controller](https://github.com/kubernetes/ingress-nginx/) with certificate signed by [cert-manager](https://cert-manager.io/) at host `hc.cityapp.vx`
 > 
 > Edit the service and ingress according to the environment before applying
 
 ```console
-kubectl apply -f https://github.com/joetanx/conjur-k8s/raw/main/cityapp-hardcode.yaml
+kubectl apply -f https://github.com/joetanx/conjur-k8s/raw/main/manifests/hc.yaml
 ```
 
 Verify that the application is deployed successfully:
@@ -385,14 +350,15 @@ Browse to the service to verify that the application is working
 - The cityapp connects to the MySQL world database to display random city information
 - The database, username and password information is displayed for debugging, and the application is using the credentials hardcoded in the pod environment variables
 
-![image](https://github.com/joetanx/conjur-k8s/assets/90442032/6e053aab-c571-4e16-9156-b2436ca1d25e)
+![image](https://github.com/joetanx/conjur-k8s/assets/90442032/0a98937d-4aed-4dde-af55-f77b77a3ae42)
 
 Rotate the password on the MySQL server and update the new password in Conjur:
 
-| Target | Command |
-| --- | --- |
-| MySQL Server | `mysql -u root -e "ALTER USER 'cityapp'@'%' IDENTIFIED BY 'qBIs3urqM0aG';"` |
-| Conjur | `conjur variable set -i db_cityapp/password -v qBIs3urqM0aG` |
+|Task|Command|
+|---|---|
+|Generate random string|`NEWPASS=$(openssl rand -base64 12)`|
+|MySQL Server|`mysql -u root -e "ALTER USER 'cityapp'@'%' IDENTIFIED BY '$NEWPASS';"`|
+|Conjur|`conjur variable set -i db_cityapp/password -v $NEWPASS`|
 
 Refresh the cityapp-hardcode page: the page will throw an authentication error, since the hard-coded credentials are no longer valid:
 
@@ -400,39 +366,139 @@ Refresh the cityapp-hardcode page: the page will throw an authentication error, 
 SQLSTATE[HY000] [1045] Access denied for user 'cityapp'@'10.244.0.6' (using password: YES)
 ```
 
-## 6. Retrieving credentials using Secrets Provider for Kubernetes
+## 7. Retrieving secrets from Conjur with [secrets provider for k8s](https://github.com/cyberark/secrets-provider-for-k8s)
 
-Ref: [Secrets Provider - Push-to-File mode](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/cjr-k8s-jwt-sp-ic-p2f.htm)
+### 7.1. Push to file (p2f)
 
-![image](images/architectureCityappSecretsProvider.png)
+Ref: [Secrets Provider - Push-to-File mode](https://docs.cyberark.com/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/cjr-k8s-jwt-sp-ic-p2f.htm)
 
-> **Note** The provided manifest exposes the deployment through NGINX ingress controller at host `secretsprovider.cityapp.vx`
+![p2f](https://github.com/joetanx/conjur-k8s/assets/90442032/6a8c564b-5e5f-43c6-9b1c-15d7585d43a5)
+
+> [!Note!]
+> 
+> The provided manifest exposes the deployment through [NGINX ingress controller](https://github.com/kubernetes/ingress-nginx/) with certificate signed by [cert-manager](https://cert-manager.io/) at host `p2f.cje.cityapp.vx`
 > 
 > Edit the service and ingress according to the environment before applying
 
 ```console
-kubectl apply -f https://github.com/joetanx/conjur-k8s/raw/main/cityapp-secretsprovider.yaml
+kubectl apply -f https://github.com/joetanx/conjur-k8s/raw/main/manifests/p2f.yaml
 ```
 
 Verify that the application is deployed successfully:
 
 ```console
-kubectl -n cityapp get pods -o wide
+kubectl -n app-cje get pods -o wide
 ```
 
 Browse to the service to verify that the application is working
 
 - Notice that the database connection details list the credentials retrieved from Conjur:
 
-![image](https://github.com/joetanx/conjur-k8s/assets/90442032/7f9ac05b-a05e-4466-a998-d6dd4ba99967)
+![image](https://github.com/joetanx/conjur-k8s/assets/90442032/64d9a8f2-dc5e-4125-8610-fb22b986e64e)
 
-## 7. Deploy cityapp-secretless
+### 7.2. Push to Kubernetes secrets (p2s)
 
-### 7.1. Avoiding secrets from ever touching your application - Secretless Broker
+Ref [Secrets Provider - Kubernetes Secrets mode](https://docs.cyberark.com/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/cjr-k8s-jwt-sp-ic.htm)
 
-The [Secretless Broker](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-secretless-sidecar.htm) enables applications to connect securely to services without ever having to fetch secrets
+#### 7.2.1. Environment variables mode
 
-In this demo, `secretless broker` will run as a sidecar container alongside with the `cityapp` container
+![p2s-env](https://github.com/joetanx/conjur-k8s/assets/90442032/8577e1a7-7e1f-416e-8e35-180c7f5b97fb)
+
+> [!Note!]
+> 
+> The provided manifest exposes the deployment through [NGINX ingress controller](https://github.com/kubernetes/ingress-nginx/) with certificate signed by [cert-manager](https://cert-manager.io/) at host `p2s-env.cje.cityapp.vx`
+> 
+> Edit the service and ingress according to the environment before applying
+
+```console
+kubectl apply -f https://github.com/joetanx/conjur-k8s/raw/main/manifests/p2s-env.yaml
+```
+
+Verify that the application is deployed successfully:
+
+```console
+kubectl -n app-cje get pods -o wide
+```
+
+Browse to the service to verify that the application is working
+
+- Notice that the database connection details list the credentials retrieved from Conjur:
+
+![image](https://github.com/joetanx/conjur-k8s/assets/90442032/8a3f0e48-15b1-41a5-83cf-c27083fdcc5c)
+
+#### 7.2.2. Volume mount mode
+
+![p2s-vol](https://github.com/joetanx/conjur-k8s/assets/90442032/f26dca90-2b93-4529-bf31-23ce820ec055)
+
+> [!Note!]
+> 
+> The provided manifest exposes the deployment through [NGINX ingress controller](https://github.com/kubernetes/ingress-nginx/) with certificate signed by [cert-manager](https://cert-manager.io/) at host `p2s-vol.cje.cityapp.vx`
+> 
+> Edit the service and ingress according to the environment before applying
+
+```console
+kubectl apply -f https://github.com/joetanx/conjur-k8s/raw/main/manifests/p2s-vol.yaml
+```
+
+Verify that the application is deployed successfully:
+
+```console
+kubectl -n app-cje get pods -o wide
+```
+
+Browse to the service to verify that the application is working
+
+- Notice that the database connection details list the credentials retrieved from Conjur:
+
+![image](https://github.com/joetanx/conjur-k8s/assets/90442032/9dd4ad31-5f23-405f-9ec3-076539eb2fb5)
+
+### 7.3. Differences between P2F, P2S-Env and P2S-Vol design patterns
+
+#### 7.3.1. P2F Behaviour
+
+**Secrets provider push destination:** File in volume shared with application
+
+**Application consume secrets from:** File in volume shared with secrets provider
+
+**Rotation behaviour:** File in shared volume gets updated by the secrets provider periodically (in sidecar mode), deployment restart is not required.
+
+#### 7.3.2. P2S-Env Behaviour
+
+**Secrets provider push destination:** Kubernetes secrets
+
+**Application consume secrets from:** Environment variables
+
+**Rotation behaviour:**
+
+Kubernetes secrets get updated by the secrets provider periodically (in sidecar mode).
+
+However, Kubernetes secrets are only pushed to the pods environment during pods start-up, the rotated secret is not updated in the pod's environment variables.
+
+Hence, deployment restart is required to get updated secrets
+
+#### 7.3.3. P2S-Vol Behaviour
+
+**Secrets provider push destination:** Kubernetes secrets
+
+**Application consume secrets from:** Files in volume mount
+
+**Rotation behaviour:**
+
+Kubernetes secrets get updated by the secrets provider periodically (in sidecar mode).
+
+However, updates to the files in the volume mount is dependent on the Kubernetes cluster:
+- The kubelet keeps a cache of the current keys and values for the Secrets that are used in volumes for pods on that node.
+- Updates to Secrets can be either propagated by an API watch mechanism (the default), based on a cache with a defined time-to-live, or polled from the cluster API server on each kubelet synchronisation loop.
+- As a result, the total delay from the moment when the Secret is updated to the moment when new keys are projected to the Pod can be as long as the kubelet sync period + cache propagation delay, where the cache propagation delay depends on the chosen cache type (following the same order listed in the previous paragraph, these are: watch propagation delay, the configured cache TTL, or zero for direct polling).
+- Ref: https://kubernetes.io/docs/concepts/configuration/secret/#using-secrets-as-files-from-a-pod
+
+## 8. ARCHIVED: Deploy cityapp-secretless
+
+### 8.1. Avoiding secrets from ever touching your application - Secretless Broker
+
+The [Secretless Broker](https://docs.cyberark.com/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-secretless-sidecar.htm) enables applications to connect securely to services without ever having to fetch secrets
+
+In the provided `[sl.yaml](./manifests/sl.yaml)` manifest, the `secretless broker` runs as a sidecar container alongside with the `cityapp` container
 
 The Secretless Broker will:
 - Authenticate to Conjur
@@ -444,29 +510,31 @@ Application connection flow with Secretless Broker:
 
 ![image](images/architectureCityappSecretless.png)
 
-### 7.2. Prepare the ConfigMap to be used by Secretless Broker
+### 8.2. Prepare the ConfigMap to be used by Secretless Broker
 
 Secretless Broker needs some configuration to determine where to listen for new connection requests, where to route those connections, and where to get the credentials for each connection
 
-- Ref: [Prepare the Secretless configuration](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-secretless-sidecar.htm#PreparetheSecretlessconfiguration)
+- Ref: [Prepare the Secretless configuration](https://docs.cyberark.com/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-secretless-sidecar.htm#PreparetheSecretlessconfiguration)
 
-We will map the `cityapp-secretless-cm.yaml` to the `cityapp` container using a ConfigMap
+We will map the `sl-cm.yaml` to the `cityapp` container using a ConfigMap
 
-☝️ Secretless Broker also need to locate Conjur to authenticate and retrieve credentials, this was done in the previous step where we loaded the `apps-cm` ConfigMap
+☝️ Secretless Broker also need to locate Conjur to authenticate and retrieve credentials, this was done in the [previous step](#44-create-configmap-apps-cm-for-applications) where we loaded the `apps-cm` ConfigMap
 
 ```console
-curl -sLO https://github.com/joetanx/conjur-k8s/raw/main/secretless-cm.yaml
-kubectl -n cityapp create configmap secretless-cm --from-file=secretless-cm.yaml
+curl -sLO https://github.com/joetanx/conjur-k8s/raw/main/manifests/sl-cm.yaml
+kubectl -n app-cje create configmap sl-cm --from-file=sl-cm.yaml && rm -f sl-cm.yaml
 ```
 
-### 7.3. Deploy the Secretless-based cityapp
+### 8.3. Deploy the Secretless-based cityapp
 
-> **Note** The provided manifest exposes the deployment through NGINX ingress controller at host `secretless.cityapp.vx`
+> [!Note!]
+> 
+> The provided manifest exposes the deployment through [NGINX ingress controller](https://github.com/kubernetes/ingress-nginx/) with certificate signed by [cert-manager](https://cert-manager.io/) at host `sl.cje.cityapp.vx`
 > 
 > Edit the service and ingress according to the environment before applying
 
 ```console
-kubectl apply -f https://github.com/joetanx/conjur-k8s/raw/main/cityapp-secretless.yaml
+kubectl apply -f https://github.com/joetanx/conjur-k8s/raw/main/manifests/sl.yaml
 ```
 
 Verify that the application is deployed successfully:
@@ -478,5 +546,3 @@ kubectl -n cityapp get pods -o wide
 Browse to the service to verify that the application is working
 
 - Notice that the database connection details list that the application is connecting to `127.0.0.1` using empty credentials
-
-![image](https://github.com/joetanx/conjur-k8s/assets/90442032/7a435644-d7e4-41bd-8017-ea58b91959e4)
