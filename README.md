@@ -120,7 +120,7 @@ The policy [`authn-jwt-k8s.yaml`](./policies/authn-jwt-k8s.yaml) performs the fo
 
 - Ref: [6. Enable the seed generation service](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-jwt-authn.htm#ConfiguretheJWTAuthenticator)
 - Creates `conjur/seed-generation` policy
-- Creates the `webservice` for the seed generation with `consumers` group allowed to authenticate to the webservice
+- Creates the `webservice` for the seed generation with `consumers` group allowed to request for seed
 
 ### 3.2. Host identity policy
 
@@ -227,9 +227,7 @@ CONJUR_AUTHN_URL=$CONJUR_FOLLOWER_URL/authn-jwt/k8s
 > On `CONJUR_SSL_CERTIFICATE`:
 > 
 > - `dap-seedfetcher` container needs to verify the Conjur **master** certificate
-> - 
-> - `conjur-authn-k8s-client` and `secretless-broker` containers need to verify the Conjur **follower** certificate
-> - 
+> - `secrets-provider-for-k8s` and `secretless-broker` containers need to verify the Conjur **follower** certificate
 > - Since both the master and follower certificates in this demo are signed by the same CA `central.pem`, using the CA certificate will suffice
 
 ### 4.3. Create ConfigMap `follower-cm` for follower
@@ -252,7 +250,7 @@ Ref:
 - [CyberArk raw manifest repository](https://github.com/cyberark/conjur-authn-k8s-client/blob/master/helm/conjur-config-namespace-prep/generated/conjur-config-namespace-prep.yaml)
 
 ```console
-kubectl -n cityapp create configmap apps-cm \
+kubectl -n app-cje create configmap apps-cm \
 --from-literal CONJUR_ACCOUNT=$CONJUR_ACCOUNT \
 --from-literal CONJUR_APPLIANCE_URL=$CONJUR_FOLLOWER_URL \
 --from-literal CONJUR_AUTHN_URL=$CONJUR_AUTHN_URL \
@@ -308,21 +306,47 @@ Restart the CoreDNS deployment:
 kubectl rollout restart deploy coredns -n kube-system
 ```
 
-# ⚠ WORK IN PROGRESS ⚠
+## 5. Deploy the follower
 
-# ⚠ THE CONTENT BELOW ARE IN PROCESS OF BEING UPDATED ⚠
+The `follower.yaml` manifest in the [manifests](./manifests) directory of this repository defines the necessary configurations to deploy the Conjur Follower into Kubernetes
 
-## 3. Deploy the follower
+Review the file and read the ref link to understand how it works
 
-The `follower.yaml` manifest defines the necessary configurations to deploy the Conjur Follower into Kubernetes; review the file and read the ref link to understand how it works
-
-Ref: [4. Set up the Follower service and deployment manifest](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-conjfollower.htm)
+Ref: [4. Set up the Follower service and deployment manifest](https://docs.cyberark.com/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-conjfollower.htm)
 
 Deploy the manifest file into the Kubernetes cluster:
 
 ```console
-kubectl apply -f https://github.com/joetanx/conjur-k8s/raw/main/follower.yaml
+kubectl apply -f https://github.com/joetanx/conjur-k8s/raw/main/manifests/follower.yaml
 ```
+
+## 6. Deploy the cityapp test application
+
+### 6.1. Preparing for cityapp deployment
+
+The cityapp application is used to demostrate the various scenarios: hard-coded, secrets-provider, and secretless methods to consume the secrets
+
+The deployment manifest files in this repo is configured use `docker.io/joetanx/cityapp:php`
+
+<details><summary><b>OPTIONAL:</b> Building the cityapp image from source</summary>
+
+To build the container image from [source](https://github.com/joetanx/cityapp-php)
+
+```console
+curl -sLO https://github.com/joetanx/cityapp-php/raw/main/Dockerfile
+curl -sLO https://github.com/joetanx/cityapp-php/raw/main/index.php
+podman build -t cityapp:php .
+rm -rf Dockerfile index.php
+```
+
+> [!Note]
+> Update the manifest files to change `docker.io/joetanx/cityapp:php` to `localhost/cityapp:php` if you built the container image locally
+
+</details>
+
+# ⚠ WORK IN PROGRESS ⚠
+
+# ⚠ THE CONTENT BELOW ARE IN PROCESS OF BEING UPDATED ⚠
 
 ## 4. Preparing for cityapp deployment
 
