@@ -508,7 +508,7 @@ The Secretless Broker will:
 
 Application connection flow with Secretless Broker:
 
-![image](images/architectureCityappSecretless.png)
+![sl](https://github.com/joetanx/conjur-k8s/assets/90442032/dadde68b-b6d7-429a-a14e-c31489f6924e)
 
 ### 8.2. Prepare the ConfigMap to be used by Secretless Broker
 
@@ -540,9 +540,11 @@ kubectl apply -f https://github.com/joetanx/conjur-k8s/raw/main/manifests/sl.yam
 Verify that the application is deployed successfully:
 
 ```console
-kubectl -n cityapp get pods -o wide
+kubectl -n app-cje get pods -o wide
 ```
 
 Browse to the service to verify that the application is working
 
 - Notice that the database connection details list that the application is connecting to `127.0.0.1` using empty credentials
+
+![image](https://github.com/joetanx/conjur-k8s/assets/90442032/7ff29a0f-f7da-4cb0-8abb-9dec1c8e55a5)
