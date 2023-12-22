@@ -1,0 +1,40 @@
+apiVersion: conjur.cyberark.com/v1
+kind: ConjurFollower
+metadata:
+  name: follower
+  namespace: conjur
+  labels:
+    app: follower
+spec:
+  replicas: 1
+  resourceNames:
+    deployment: follower
+    service: follower
+    serviceAccount: follower
+  master:
+    hostname: conjur.vx
+    account: cyberark
+    authentication: authn-jwt
+    audience: https://conjur.vx/
+    authenticatorID: k8s
+    caCertificateFrom:
+      configMapKeyRef:
+        name: ca-cert
+        key: conjur-ca.pem
+  configFileFrom:
+    configMapKeyRef:
+      name: conjur-config
+      key: conjur.yml
+  imagePullPolicy: IfNotPresent
+  images:
+    conjur: <image-registry>/conjur-kubernetes-follower-conjur:<k8s-follower-version>
+    info: <image-registry>/conjur-kubernetes-follower-info:<k8s-follower-version>
+    nginx: <image-registry>/conjur-kubernetes-follower-nginx:<k8s-follower-version>
+    postgres: <image-registry>/conjur-kubernetes-follower-postgres:<k8s-follower-version>
+    configurator: <image-registry>/conjur-kubernetes-follower-configurator:<k8s-follower-version>
+    syslogNg: <image-registry>/conjur-kubernetes-follower-syslog-ng:<k8s-follower-version>
+    failoverRebaser: <image-registry>/conjur-kubernetes-follower-failover-rebaser:<k8s-follower-version>
+  containerEnv:
+    configurator:
+    - name: FOLLOWER_SEED_NAMES
+      value: follower.conjur.svc.cluster.local
