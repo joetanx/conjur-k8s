@@ -8,14 +8,14 @@
   - !layer cityapp
   - &k8s-hosts
     # Define an identity in Conjur for the Conjur Follower
-    # Ref: https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-conjfollower.htm
+    # Ref: https://docs.cyberark.com/conjur-enterprise/latest/en/Content/Integrations/k8s-ocp/k8s-conjfollower.htm
     - !host
       id: system:serviceaccount:conjur:follower
       annotations:
         authn-jwt/k8s/kubernetes.io/namespace: conjur
         authn-jwt/k8s/kubernetes.io/serviceaccount/name: follower
     # Define the application as a Conjur host in policy
-    # Ref: https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/cjr-k8s-authn-client-authjwt.htm
+    # Ref: https://docs.cyberark.com/conjur-enterprise/latest/en/Content/Integrations/k8s-ocp/cjr-k8s-authn-client-authjwt.htm
     - !host
       id: system:serviceaccount:app-cje:p2f
       annotations:

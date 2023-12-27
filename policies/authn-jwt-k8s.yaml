@@ -1,5 +1,5 @@
 # Define the JWT Authenticator endpoint in Conjur
-# Ref: https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-jwt-authn.htm#ConfiguretheJWTAuthenticator
+# Ref: https://docs.cyberark.com/conjur-enterprise/latest/en/Content/Integrations/k8s-ocp/k8s-jwt-authn.htm#ConfiguretheJWTAuthenticator
 - !policy
   id: conjur/authn-jwt/k8s
   owner: !group conjur-admins
@@ -37,7 +37,7 @@
     resource: !webservice status
 
 # Enable the seed generation service
-# Ref: https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Deployment/cnj-seedservice.htm
+# Ref: https://docs.cyberark.com/conjur-enterprise/latest/en/Content/Deployment/cnj-seedservice.htm
 - !policy
   id: conjur/seed-generation
   owner: !group conjur-admins
