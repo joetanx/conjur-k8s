@@ -602,7 +602,7 @@ However, updates to the files in the volume mount is dependent on the Kubernetes
 
 > [!Note]
 > 
-> Requires [6.0. Preparation for cityapp : secrets provider deployment](#60-preparation-for-cityapp-secrets-provider-deployment)
+> Requires [6.0. Preparation for cityapp : secrets provider deployment](#60-preparation-for-cityapp--secrets-provider-deployment)
 
 ### 7.1. Avoiding secrets from ever touching your application - Secretless Broker
 
