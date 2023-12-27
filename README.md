@@ -61,9 +61,9 @@ Conjur leverages on the Kubernetes OIDC authentication endpoint as an Identity P
 
 #### Software Versions
 
-- RHEL 9.2
-- Conjur Enterprise 13.0
-- Kubernetes 1.28
+- RHEL 9.3
+- Conjur Enterprise 13.1
+- Kubernetes 1.29
 
 #### Servers
 
@@ -96,13 +96,13 @@ The policy [`authn-jwt-k8s.yaml`](./policies/authn-jwt-k8s.yaml) performs the fo
 
 1. Define the JWT authenticator endpoint in Conjur
 
-- Ref: [2. Define the JWT Authenticator endpoint in Conjur](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-jwt-authn.htm#ConfiguretheJWTAuthenticator)
+- Ref: [2. Define the JWT Authenticator endpoint in Conjur](https://docs.cyberark.com/conjur-enterprise/latest/en/Content/Integrations/k8s-ocp/k8s-jwt-authn.htm#ConfiguretheJWTAuthenticator)
 - Creates `conjur/authn-jwt/k8s` policy with the necessary variables
 - Creates the `webservice` for the authenticator with `consumers` group allowed to authenticate to the webservice
 
 2. Enable the seed generation service
 
-- Ref: [6. Enable the seed generation service](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-jwt-authn.htm#ConfiguretheJWTAuthenticator)
+- Ref: [6. Enable the seed generation service](https://docs.cyberark.com/conjur-enterprise/latest/en/Content/Integrations/k8s-ocp/k8s-jwt-authn.htm#ConfiguretheJWTAuthenticator)
 - Creates `conjur/seed-generation` policy
 - Creates the `webservice` for the seed generation with `consumers` group allowed to request for seed
 
@@ -114,7 +114,7 @@ The policy [`k8s-hosts.yaml`](./policies/k8s-hosts.yaml) performs the following:
 
 - Host identities for:
   - Conjur Follower in Kubernetes identified by `system:serviceaccount:conjur:follower`
-    - Ref: [2. Define an identity in Conjur for the Conjur Follower](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-conjfollower.htm)
+    - Ref: [2. Define an identity in Conjur for the Conjur Follower](https://docs.cyberark.com/conjur-enterprise/latest/en/Content/Integrations/k8s-ocp/k8s-conjfollower.htm)
   - Demo applications
     |Host identity|Service account|
     |---|---|
@@ -122,7 +122,7 @@ The policy [`k8s-hosts.yaml`](./policies/k8s-hosts.yaml) performs the following:
     |`p2s-env`|`system:serviceaccount:app-cje:p2s-env`|
     |`p2s-vol`|`system:serviceaccount:app-cje:p2s-vol`|
     |`sl`|`system:serviceaccount:app-cje:sl`|
-    - Ref: [2. Define the application as a Conjur host in policy + 3.Grant access to secrets](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/cjr-k8s-authn-client-authjwt.htm#Setuptheapplicationtoretrievesecrets)
+    - Ref: [2. Define the application as a Conjur host in policy + 3.Grant access to secrets](https://docs.cyberark.com/conjur-enterprise/latest/en/Content/Integrations/k8s-ocp/cjr-k8s-authn-client-authjwt.htm#Setuptheapplicationtoretrievesecrets)
 
 2. The follower and demo applications are granted access the following permissions by adding them to the respective `consumers` group:
     |Host identity|Authorization|
@@ -182,43 +182,120 @@ Verify that the Kubernetes authenticator is configured and allowlisted:
 curl -k https://conjur.vx/info
 ```
 
-## 4. Preparing Kubernetes configurations
+## 4. Deploy Follower
 
-The Conjur master and follower information is passed to the follower and application pods using ConfigMaps
+There are 2 methods for deploying followers insider the Kubernetes cluster:
 
-### 4.1. Create namespaces
+|Method|Description|
+|---|---|
+|Operator|This is known as **Conjur Kubernetes Follower**. Conjur is dissected into individual component containers (nginx, postgres, syslog-ng, etc) and Custom Resource Definitions (CRDs) are defined to create the **ConjurFollower** operator object in the cluster.|
+|Appliance|This is known as **Conjur Follower**. This uses the Conjur appliance container image.|
+
+Ref: https://docs.cyberark.com/conjur-enterprise/latest/en/Content/Integrations/k8s-ocp/k8s-follower-lp.htm
+
+Regardless of the method selected, this guide deploys the followers in the `conjur` namespace
 
 ```console
 kubectl create namespace conjur
-kubectl create namespace app-hc
-kubectl create namespace app-cje
 ```
 
-### 4.2. Prepare the necessary values as environments variables to be loaded into ConfigMaps:
+### 4.1. Method 1 - Deploy Operator Follower
 
-```console
-CA_CERT="$(curl -sL https://github.com/joetanx/conjur-k8s/raw/main/central.pem)"
-CONJUR_MASTER_URL=https://conjur.vx
-CONJUR_FOLLOWER_URL=https://follower.conjur.svc.cluster.local
-AUTHENTICATOR_ID=k8s
-CONJUR_ACCOUNT=cyberark
-CONJUR_SEED_FILE_URL=$CONJUR_MASTER_URL/configuration/$CONJUR_ACCOUNT/seed/follower
-CONJUR_AUTHN_URL=$CONJUR_FOLLOWER_URL/authn-jwt/k8s
+Ref: https://docs.cyberark.com/conjur-enterprise/latest/en/Content/Integrations/k8s-ocp/k8s-k8sfollower-dply.htm
+
+Import the respective container images into your container registry. This can also be the local image store for a single-node Kubernetes cluster
+
+#### 4.1.1. Prepare Operator Manifest Files
+
+Download the [sample manifest files](./manifests/operator/) provided in this repo or copy from the installation package from CyberArk
+
+Update the `<image-registry>` and `<k8s-follower-version>` in the manifest files to the appropriate values
+
+[`operator.yaml`](/manifests/operator/operator.yaml):
+
+https://github.com/joetanx/conjur-k8s/blob/e694298d92e9593f77e3757be7221d6d96ac790c/manifests/operator/operator.yaml#L206
+
+[`follower.yaml`](./manifests/operator/follower.yaml):
+
+https://github.com/joetanx/conjur-k8s/blob/e694298d92e9593f77e3757be7221d6d96ac790c/manifests/operator/follower.yaml#L29-L36
+
+#### 4.1.2. Create ConfigMap for the Conjur certificate
+
+```sh
+curl -sLO https://github.com/joetanx/lab-certs/raw/main/ca/lab_root.pem
+kubectl -n conjur create configmap ca-cert --from-file=conjur-ca.pem=lab_root.pem
 ```
 
 > [!Note]
 > 
-> On `CONJUR_SSL_CERTIFICATE`:
+> The follower operator verifies the Conjur Master against this ConfigMap
+>
+> The master certificate in this example is signed by the lab CA `lab_root.pem`
+
+#### 4.1.3. Create ConfigMap for Conjur Config File
+
+```sh
+cat << EOF > conjur.yml
+authenticators:
+  - authn-jwt/k8s
+  - authn
+EOF
+kubectl -n conjur create configmap conjur-config --from-file=conjur.yml
+```
+
+> [!Note]
 > 
-> - `dap-seedfetcher` container needs to verify the Conjur **master** certificate
-> - `secrets-provider-for-k8s` and `secretless-broker` containers need to verify the Conjur **follower** certificate
-> - Since both the master and follower certificates in this demo are signed by the same CA `central.pem`, using the CA certificate will suffice
+> Without a Conjur config file, only the basic `authn` authenticator will be enabled on the follower operator
 
-### 4.3. Create ConfigMap `follower-cm` for follower
+#### 4.1.4. Apply the Manifest files to Deploy the Operator Follower
 
-Ref: [3. Set up a ConfigMap](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-conjfollower.htm):
+```sh
+kubectl apply -f crds.yaml
+kubectl apply -f operator.yaml
+kubectl apply -f follower.yaml
+```
+
+Example successful operator follower deployment output:
 
 ```console
+[root@kube ~]# kubectl -n conjur get all
+NAME                            READY   STATUS    RESTARTS   AGE
+pod/follower-7d4f7cf47d-dq5p7   6/6     Running   0          67s
+
+NAME               TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)   AGE
+service/follower   ClusterIP   10.96.1.119   <none>        443/TCP   67s
+
+NAME                       READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/follower   1/1     1            1           67s
+
+NAME                                  DESIRED   CURRENT   READY   AGE
+replicaset.apps/follower-7d4f7cf47d   1         1         1       67s
+```
+
+### 4.2. Method 2 - Deploy Appliance Follower
+
+Ref: [4. Set up the Follower service and deployment manifest](https://docs.cyberark.com/conjur-enterprise/latest/en/Content/Integrations/k8s-ocp/k8s-conjfollower.htm)
+
+#### 4.2.1. Create ConfigMap Required by the Appliance Follower
+
+Prepare the Conjur Master information:
+
+```sh
+CA_CERT="$(curl -sL https://github.com/joetanx/lab-certs/raw/main/ca/lab_root.pem)"
+CONJUR_MASTER_URL=https://conjur.vx
+AUTHENTICATOR_ID=k8s
+CONJUR_ACCOUNT=cyberark
+CONJUR_SEED_FILE_URL=$CONJUR_MASTER_URL/configuration/$CONJUR_ACCOUNT/seed/follower
+```
+
+> [!Note]
+> 
+> The follower operator verifies the Conjur Master against `CA_CERT`
+>
+> The master certificate in this example is signed by the lab CA `lab_root.pem`
+Create the ConfigMap:
+
+```sh
 kubectl -n conjur create configmap follower-cm \
 --from-literal CONJUR_ACCOUNT=$CONJUR_ACCOUNT \
 --from-literal CONJUR_APPLIANCE_URL=$CONJUR_MASTER_URL \
@@ -227,21 +304,21 @@ kubectl -n conjur create configmap follower-cm \
 --from-literal "CONJUR_SSL_CERTIFICATE=${CA_CERT}"
 ```
 
-### 4.4. Create ConfigMap `apps-cm` for applications
+#### 4.2.2. Deploy the Appliance Follower
 
-Ref:
-- [Prepare the Kubernetes cluster and Golden ConfigMap](https://docs.cyberark.com/Product-Doc/OnlineHelp/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-jwt-set-up-apps.htm#PreparetheKubernetesclusterandGoldenConfigMap)
-- [CyberArk raw manifest repository](https://github.com/cyberark/conjur-authn-k8s-client/blob/master/helm/conjur-config-namespace-prep/generated/conjur-config-namespace-prep.yaml)
+Download the [sample appliance follower manifest file](./manifests/appliance-follower.yaml)
 
-```console
-kubectl -n app-cje create configmap apps-cm \
---from-literal CONJUR_ACCOUNT=$CONJUR_ACCOUNT \
---from-literal CONJUR_APPLIANCE_URL=$CONJUR_FOLLOWER_URL \
---from-literal CONJUR_AUTHN_URL=$CONJUR_AUTHN_URL \
---from-literal "CONJUR_SSL_CERTIFICATE=${CA_CERT}"
+Update the `<image-registry>` and `<k8s-follower-version>` in the manifest file to the appropriate values
+
+https://github.com/joetanx/conjur-k8s/blob/e694298d92e9593f77e3757be7221d6d96ac790c/manifests/appliance-follower.yaml#L39
+
+#### 4.2.3. Apply the Manifest file to Deploy the Appliance Follower
+
+```sh
+kubectl apply -f appliance-follower.yaml
 ```
 
-### 4.5. Optional - add static host entries in CoreDNS
+<details><Summary><h4>4.3. Troubleshooting Conjur Master Name Resolution Issue</h4></Summary>
 
 - The `dap-seedfetcher` container uses `wget` to retrieve the seed file from Conjur Master.
 - Depending on network configurations, some dual stacked kubernetes may not be able to resolve static host entries in DNS properly, causing `wget: unable to resolve host address` error.
@@ -249,13 +326,13 @@ kubectl -n app-cje create configmap apps-cm \
 - This dual-stack behaviour is somewhat explained in: <https://umbrella.cisco.com/blog/dual-stack-search-domains-host-roulette>
 - We can ensure resolution of our Conjur Master FQDN by loading it into the Kubernetes CoreDNS. Ref: <https://coredns.io/plugins/hosts/>
 
-```console
+```sh
 kubectl -n kube-system edit cm coredns
 ```
 
 Add the hosts portion into the Corefile section:
 
-```console
+```yaml
   Corefile: |
     .:53 {
         errors
@@ -284,29 +361,11 @@ Add the hosts portion into the Corefile section:
     }
 ```
 
-Restart the CoreDNS deployment:
+</details>
 
-```console
-kubectl rollout restart deploy coredns -n kube-system
-```
+## 5. Deploy the cityapp test application
 
-## 5. Deploy the follower
-
-The `follower.yaml` manifest in the [manifests](./manifests) directory of this repository defines the necessary configurations to deploy the Conjur Follower into Kubernetes
-
-Review the file and read the ref link to understand how it works
-
-Ref: [4. Set up the Follower service and deployment manifest](https://docs.cyberark.com/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-conjfollower.htm)
-
-Deploy the manifest file into the Kubernetes cluster:
-
-```console
-kubectl apply -f https://github.com/joetanx/conjur-k8s/raw/main/manifests/follower.yaml
-```
-
-## 6. Deploy the cityapp test application
-
-### 6.1. Preparing for cityapp deployment
+### 5.1. Preparing for cityapp deployment
 
 The cityapp application is used to demostrate the various scenarios: hard-coded, secrets-provider, and secretless methods to consume the secrets
 
@@ -328,7 +387,45 @@ rm -rf Dockerfile index.php
 
 </details>
 
-### 6.2. Deploy cityapp-hardcode
+#### 5.1.1.Create namespaces
+
+```console
+kubectl create namespace app-hc
+kubectl create namespace app-cje
+```
+
+#### 5.1.2. Create ConfigMap Required by the Secrets Provider
+
+Ref:
+- [Prepare the Kubernetes cluster and Golden ConfigMap](https://docs.cyberark.com/conjur-enterprise/latest/en/Content/Integrations/k8s-ocp/k8s-jwt-set-up-apps.htm#PreparetheKubernetesclusterandGoldenConfigMap)
+- [CyberArk raw manifest repository](https://github.com/cyberark/conjur-authn-k8s-client/blob/master/helm/conjur-config-namespace-prep/generated/conjur-config-namespace-prep.yaml)
+
+Prepare the follower information:
+
+```sh
+CA_CERT="$(curl -sL https://github.com/joetanx/lab-certs/raw/main/ca/lab_root.pem)"
+CONJUR_FOLLOWER_URL=https://follower.conjur.svc.cluster.local
+CONJUR_ACCOUNT=cyberark
+CONJUR_AUTHN_URL=$CONJUR_FOLLOWER_URL/authn-jwt/k8s
+```
+
+> [!Note]
+> 
+> The secrets provider verifies the Conjur follower against `CA_CERT`
+>
+> The follower certificate in this example is signed by the lab CA `lab_root.pem`
+
+Create the ConfigMap:
+
+```sh
+kubectl -n app-cje create configmap apps-cm \
+--from-literal CONJUR_ACCOUNT=$CONJUR_ACCOUNT \
+--from-literal CONJUR_APPLIANCE_URL=$CONJUR_FOLLOWER_URL \
+--from-literal CONJUR_AUTHN_URL=$CONJUR_AUTHN_URL \
+--from-literal "CONJUR_SSL_CERTIFICATE=${CA_CERT}"
+```
+
+### 5.2. Deploy cityapp-hardcode
 
 > [!Note]
 > 
@@ -366,9 +463,9 @@ Refresh the cityapp-hardcode page: the page will throw an authentication error, 
 SQLSTATE[HY000] [1045] Access denied for user 'cityapp'@'10.244.0.6' (using password: YES)
 ```
 
-## 7. Retrieving secrets from Conjur with [secrets provider for k8s](https://github.com/cyberark/secrets-provider-for-k8s)
+## 6. Retrieving secrets from Conjur with [secrets provider for k8s](https://github.com/cyberark/secrets-provider-for-k8s)
 
-### 7.1. Push to file (p2f)
+### 6.1. Push to file (p2f)
 
 Ref: [Secrets Provider - Push-to-File mode](https://docs.cyberark.com/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/cjr-k8s-jwt-sp-ic-p2f.htm)
 
@@ -396,11 +493,11 @@ Browse to the service to verify that the application is working
 
 ![image](https://github.com/joetanx/conjur-k8s/assets/90442032/64d9a8f2-dc5e-4125-8610-fb22b986e64e)
 
-### 7.2. Push to Kubernetes secrets (p2s)
+### 6.2. Push to Kubernetes secrets (p2s)
 
 Ref [Secrets Provider - Kubernetes Secrets mode](https://docs.cyberark.com/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/cjr-k8s-jwt-sp-ic.htm)
 
-#### 7.2.1. Environment variables mode
+#### 6.2.1. Environment variables mode
 
 ![p2s-env](https://github.com/joetanx/conjur-k8s/assets/90442032/8577e1a7-7e1f-416e-8e35-180c7f5b97fb)
 
@@ -426,7 +523,7 @@ Browse to the service to verify that the application is working
 
 ![image](https://github.com/joetanx/conjur-k8s/assets/90442032/8a3f0e48-15b1-41a5-83cf-c27083fdcc5c)
 
-#### 7.2.2. Volume mount mode
+#### 6.2.2. Volume mount mode
 
 ![p2s-vol](https://github.com/joetanx/conjur-k8s/assets/90442032/f26dca90-2b93-4529-bf31-23ce820ec055)
 
@@ -452,9 +549,9 @@ Browse to the service to verify that the application is working
 
 ![image](https://github.com/joetanx/conjur-k8s/assets/90442032/9dd4ad31-5f23-405f-9ec3-076539eb2fb5)
 
-### 7.3. Differences between P2F, P2S-Env and P2S-Vol design patterns
+### 6.3. Differences between P2F, P2S-Env and P2S-Vol design patterns
 
-#### 7.3.1. P2F Behaviour
+#### 6.3.1. P2F Behaviour
 
 **Secrets provider push destination:** File in volume shared with application
 
@@ -476,7 +573,7 @@ However, Kubernetes secrets are only pushed to the pods environment during pods 
 
 Hence, deployment restart is required to get updated secrets
 
-#### 7.3.3. P2S-Vol Behaviour
+#### 6.3.3. P2S-Vol Behaviour
 
 **Secrets provider push destination:** Kubernetes secrets
 
@@ -492,9 +589,9 @@ However, updates to the files in the volume mount is dependent on the Kubernetes
 - As a result, the total delay from the moment when the Secret is updated to the moment when new keys are projected to the Pod can be as long as the kubelet sync period + cache propagation delay, where the cache propagation delay depends on the chosen cache type (following the same order listed in the previous paragraph, these are: watch propagation delay, the configured cache TTL, or zero for direct polling).
 - Ref: https://kubernetes.io/docs/concepts/configuration/secret/#using-secrets-as-files-from-a-pod
 
-<details><summary><h2>8. ARCHIVED: Deploy cityapp-secretless</h2></summary>
+<details><summary><h2>7. ARCHIVED: Deploy cityapp-secretless</h2></summary>
 
-### 8.1. Avoiding secrets from ever touching your application - Secretless Broker
+### 7.1. Avoiding secrets from ever touching your application - Secretless Broker
 
 The [Secretless Broker](https://docs.cyberark.com/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-secretless-sidecar.htm) enables applications to connect securely to services without ever having to fetch secrets
 
@@ -510,7 +607,7 @@ Application connection flow with Secretless Broker:
 
 ![sl](https://github.com/joetanx/conjur-k8s/assets/90442032/dadde68b-b6d7-429a-a14e-c31489f6924e)
 
-### 8.2. Prepare the ConfigMap to be used by Secretless Broker
+### 7.2. Prepare the ConfigMap to be used by Secretless Broker
 
 Secretless Broker needs some configuration to determine where to listen for new connection requests, where to route those connections, and where to get the credentials for each connection
 
