@@ -156,7 +156,7 @@ conjur variable set -i conjur/authn-jwt/k8s/public-keys -v "{\"type\":\"jwks\", 
 conjur variable set -i conjur/authn-jwt/k8s/issuer -v $ISSUER
 conjur variable set -i conjur/authn-jwt/k8s/token-app-property -v sub
 conjur variable set -i conjur/authn-jwt/k8s/identity-path -v jwt-apps/k8s
-conjur variable set -i conjur/authn-jwt/k8s/audience -v vxlab
+conjur variable set -i conjur/authn-jwt/k8s/audience -v https://conjur.vx/
 ```
 
 ### 3.4. Allowlist the JWT authenticator in Conjur
