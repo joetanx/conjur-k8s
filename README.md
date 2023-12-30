@@ -430,7 +430,7 @@ Rotate the password on the MySQL server and update the new password in Conjur:
 Refresh the cityapp-hardcode page: the page will throw an authentication error, since the hard-coded credentials are no longer valid:
 
 ```
-SQLSTATE[HY000] [1045] Access denied for user 'cityapp'@'10.244.0.6' (using password: YES)
+SQLSTATE[HY000] [1045] Access denied for user 'cityapp'@'192.168.17.91' (using password: YES)
 ```
 
 ## 6. Retrieving secrets from Conjur with [secrets provider for k8s](https://github.com/cyberark/secrets-provider-for-k8s)
@@ -635,7 +635,7 @@ curl -sLO https://github.com/joetanx/conjur-k8s/raw/main/manifests/sl-cm.yaml
 kubectl -n app-cje create configmap sl-cm --from-file=sl-cm.yaml && rm -f sl-cm.yaml
 ```
 
-### 8.3. Deploy the Secretless-based cityapp
+### 7.3. Deploy the Secretless-based cityapp
 
 > [!Note]
 > 
