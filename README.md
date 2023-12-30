@@ -147,7 +147,7 @@ conjur policy load -b root -f k8s-hosts.yaml
 
 ### 3.3. Populate the variables required by the JWT Authenticator
 
-Ref: [3. Populate the policy variables](https://docs.cyberark.com/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-jwt-authn.htm#ConfiguretheJWTAuthenticator)
+Ref: [3. Populate the policy variables](https://docs.cyberark.com/conjur-enterprise/latest/en/Content/Integrations/k8s-ocp/k8s-jwt-authn.htm#ConfiguretheJWTAuthenticator)
 
 ```sh
 PUBLIC_KEYS="$(kubectl get --raw $(kubectl get --raw /.well-known/openid-configuration | jq -r '.jwks_uri'))"
@@ -162,8 +162,8 @@ conjur variable set -i conjur/authn-jwt/k8s/audience -v https://conjur.vx/
 ### 3.4. Allowlist the JWT authenticator in Conjur
 
 Ref:
-- [4. Enable the JWT Authenticator in Conjur](https://docs.cyberark.com/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-jwt-authn.htm#ConfiguretheJWTAuthenticator)
-- [Step 2: Allowlist the authenticators](https://docs.cyberark.com/AAM-DAP/Latest/en/Content/Operations/Services/authentication-types.htm#Allowlis)
+- [4. Enable the JWT Authenticator in Conjur](https://docs.cyberark.com/conjur-enterprise/latest/en/Content/Integrations/k8s-ocp/k8s-jwt-authn.htm#ConfiguretheJWTAuthenticator)
+- [Step 2: Allowlist the authenticators](https://docs.cyberark.com/conjur-enterprise/latest/en/Content/Operations/Services/authentication-types.htm#Allowlis)
 
 > [!Note]
 > 
@@ -305,15 +305,15 @@ kubectl -n conjur create configmap follower-cm \
 --from-literal "CONJUR_SSL_CERTIFICATE=${CA_CERT}"
 ```
 
-#### 4.2.2. Deploy the appliance-based follower
+#### 4.2.2. Prepare manifest file for the appliance-based follower
 
 Download the [sample appliance follower manifest file](./manifests/appliance-follower.yaml)
 
-Update the `<image-registry>` and `<k8s-follower-version>` in the manifest file to the appropriate values
+Update the `<image-registry>` and `<conjur-version>` in the manifest file to the appropriate values
 
 https://github.com/joetanx/conjur-k8s/blob/e694298d92e9593f77e3757be7221d6d96ac790c/manifests/appliance-follower.yaml#L39
 
-#### 4.2.3. Apply the Manifest file to Deploy the Appliance Follower
+#### 4.2.3. Apply the manifest file to deploy the appliance-based follower
 
 ```sh
 kubectl apply -f appliance-follower.yaml
@@ -476,7 +476,7 @@ kubectl -n app-cje create configmap apps-cm \
 
 ### 6.1. Push to file (p2f)
 
-Ref: [Secrets Provider - Push-to-File mode](https://docs.cyberark.com/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/cjr-k8s-jwt-sp-ic-p2f.htm)
+Ref: [Secrets Provider - Push-to-File mode](https://docs.cyberark.com/conjur-enterprise/latest/en/Content/Integrations/k8s-ocp/cjr-k8s-jwt-sp-ic-p2f.htm)
 
 ![p2f](https://github.com/joetanx/conjur-k8s/assets/90442032/6a8c564b-5e5f-43c6-9b1c-15d7585d43a5)
 
@@ -504,7 +504,7 @@ Browse to the service to verify that the application is working
 
 ### 6.2. Push to Kubernetes secrets (p2s)
 
-Ref [Secrets Provider - Kubernetes Secrets mode](https://docs.cyberark.com/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/cjr-k8s-jwt-sp-ic.htm)
+Ref [Secrets Provider - Kubernetes Secrets mode](https://docs.cyberark.com/conjur-enterprise/latest/en/Content/Integrations/k8s-ocp/cjr-k8s-jwt-sp-ic.htm)
 
 #### 6.2.1. Environment variables mode
 
@@ -606,7 +606,7 @@ However, updates to the files in the volume mount is dependent on the Kubernetes
 
 ### 7.1. Avoiding secrets from ever touching your application - Secretless Broker
 
-The [Secretless Broker](https://docs.cyberark.com/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-secretless-sidecar.htm) enables applications to connect securely to services without ever having to fetch secrets
+The [Secretless Broker](https://docs.cyberark.com/conjur-enterprise/latest/en/Content/Integrations/k8s-ocp/k8s-secretless-sidecar.htm) enables applications to connect securely to services without ever having to fetch secrets
 
 In the provided [`sl.yaml`](./manifests/sl.yaml) manifest, the `secretless broker` runs as a sidecar container alongside with the `cityapp` container
 
@@ -624,7 +624,7 @@ Application connection flow with Secretless Broker:
 
 Secretless Broker needs some configuration to determine where to listen for new connection requests, where to route those connections, and where to get the credentials for each connection
 
-- Ref: [Prepare the Secretless configuration](https://docs.cyberark.com/AAM-DAP/Latest/en/Content/Integrations/k8s-ocp/k8s-secretless-sidecar.htm#PreparetheSecretlessconfiguration)
+- Ref: [Prepare the Secretless configuration](https://docs.cyberark.com/conjur-enterprise/latest/en/Content/Integrations/k8s-ocp/k8s-secretless-sidecar.htm#PreparetheSecretlessconfiguration)
 
 We will map the `sl-cm.yaml` to the `cityapp` container using a ConfigMap
 
