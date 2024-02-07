@@ -60,7 +60,7 @@ spec:
     spec:
       serviceAccountName: sl
       containers:
-      - name: app-cje
+      - name: cityapp
         image: docker.io/joetanx/cityapp:php
         imagePullPolicy: IfNotPresent
         env:
